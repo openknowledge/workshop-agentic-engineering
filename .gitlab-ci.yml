@@ -1,5 +1,15 @@
+<<<<<<< HEAD
 # tag::ci-stages[]
 stages:
+=======
+include:
+  - project: 'renovate-bot/renovate-runner'
+    file: '/templates/renovate.gitlab-ci.yml'
+
+# tag::ci-stages[]
+stages:
+  - renovate
+>>>>>>> 8740e8a (Initial setup)
   - build
   - integration-test
   - publish
@@ -23,6 +33,25 @@ variables:
   # Improve performance with overlayfs.
   DOCKER_DRIVER: overlay2
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+<<<<<<< HEAD
+=======
+  # tag::renovate-variables[]
+  # renovate variables
+  RENOVATE_PLATFORM: gitlab
+  RENOVATE_ENDPOINT: $CI_SERVER_URL/api/v4
+  RENOVATE_REPOSITORIES: $CI_PROJECT_PATH
+  RENOVATE_AUTODISCOVER: "false"
+  RENOVATE_ONBOARDING: "false"
+  RENOVATE_BASE_BRANCH_PATTERNS: "develop"
+  # Load config from the checked-out branch instead of the repo default branch.
+  # Remove RENOVATE_REQUIRE_CONFIG and RENOVATE_CONFIG_FILE after develop is merged.
+  RENOVATE_REQUIRE_CONFIG: "optional"
+  RENOVATE_CONFIG_FILE: "$CI_PROJECT_DIR/renovate.json"
+  # The full image ships npm/node, so no GitHub lookups (and no GITHUB_COM_TOKEN) are needed to update lock files.
+  CI_RENOVATE_IMAGE: ghcr.io/renovatebot/renovate:44-full
+  RENOVATE_BINARY_SOURCE: "global"
+  # end::renovate-variables[]
+>>>>>>> 8740e8a (Initial setup)
 
 cache:
   key: maven
@@ -30,6 +59,21 @@ cache:
     - .m2/repository
     - basisprojekt-client/.cache/ms-playwright
 
+<<<<<<< HEAD
+=======
+# tag::renovate-job[]
+renovate:
+  stage: renovate
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_REF_NAME == "develop"'
+      when: manual
+  script:
+    - 'echo "RENOVATE_TOKEN present: $([ -n "$RENOVATE_TOKEN" ] && echo YES || echo NO - TOKEN IS MISSING)"'
+    - renovate $RENOVATE_EXTRA_FLAGS
+# end::renovate-job[]
+
+>>>>>>> 8740e8a (Initial setup)
 # tag::maven-build[]
 maven-build:
   stage: build

@@ -370,6 +370,37 @@ class CustomerControllerTest {
     }
 
     @Test
+<<<<<<< HEAD
+=======
+    void getCustomerWithInvalidIdFails() throws Exception {
+        // Given
+        RestClient client = clientBuilder.build();
+
+        for (String id : List.of("abc", "0", "-1")) {
+            // When
+            var exception =
+                    assertThrows(
+                            HttpClientErrorException.BadRequest.class,
+                            () ->
+                                    client.get()
+                                            .uri("/customers/{id}", id)
+                                            .accept(APPLICATION_JSON)
+                                            .retrieve()
+                                            .toBodilessEntity());
+
+            // Then
+            Map<String, Object> body =
+                    exception.getResponseBodyAs(
+                            new ParameterizedTypeReference<Map<String, Object>>() {});
+            List<Map<String, String>> invalidParams =
+                    (List<Map<String, String>>) body.get("invalid-params");
+            assertThat(invalidParams).hasSize(1);
+            assertThat(invalidParams.get(0)).containsEntry("name", "id");
+        }
+    }
+
+    @Test
+>>>>>>> 8740e8a (Initial setup)
     void listCustomers() throws Exception {
         // Given
         RestClient client = clientBuilder.build();

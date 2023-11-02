@@ -22,6 +22,13 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
 
     Optional<CustomerEntity> findByCustomerEmailEmail(String email);
 
+<<<<<<< HEAD
+=======
+    default Optional<CustomerEntity> findByCustomerId(CustomerId id) {
+        return findById(id.customerId());
+    }
+
+>>>>>>> 8740e8a (Initial setup)
     default Optional<CustomerEntity> findByCustomerEmail(Email email) {
         return findByCustomerEmailEmail(email.email());
     }

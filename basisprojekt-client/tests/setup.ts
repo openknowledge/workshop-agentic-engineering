@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import '@testing-library/jest-dom';
+=======
+import '@testing-library/jest-dom/vitest';
+>>>>>>> 8740e8a (Initial setup)
 import { afterAll } from 'vitest';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';

@@ -15,9 +15,23 @@
  */
 package de.openknowledge.baseproject.todo.integration;
 
+<<<<<<< HEAD
+=======
+import static de.openknowledge.baseproject.infrastructure.validation.Validate.validate;
+
+>>>>>>> 8740e8a (Initial setup)
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
 
 @Embeddable
+<<<<<<< HEAD
 public record Title(@JsonValue @NotBlank String firstName) {}
+=======
+public record Title(@JsonValue @NotBlank String firstName) {
+
+    public static Title newTitle(String firstName) {
+        return validate(new Title(firstName));
+    }
+}
+>>>>>>> 8740e8a (Initial setup)

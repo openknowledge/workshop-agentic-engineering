@@ -1,14 +1,22 @@
 services:
 # tag::database[]
   basisprojekt-database:
+<<<<<<< HEAD
     image: postgres:17
+=======
+    image: postgres:18
+>>>>>>> 8740e8a (Initial setup)
     environment:
       POSTGRES_PASSWORD: geheim
     ports:
       - 5432:5432
 
   flyway:
+<<<<<<< HEAD
     image: flyway/flyway:10.22
+=======
+    image: flyway/flyway:13.10
+>>>>>>> 8740e8a (Initial setup)
     command: migrate -locations=filesystem:/flyway/sql,filesystem:/flyway/testdata -user=postgres -password=geheim -connectRetries=60 -url=jdbc:postgresql://basisprojekt-database:5432/postgres
     depends_on:
       basisprojekt-database:

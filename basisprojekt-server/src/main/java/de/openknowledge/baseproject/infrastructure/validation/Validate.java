@@ -15,7 +15,10 @@
  */
 package de.openknowledge.baseproject.infrastructure.validation;
 
+<<<<<<< HEAD
 import static de.openknowledge.baseproject.infrastructure.validation.RecordInstantiator.getCanonicalConstructor;
+=======
+>>>>>>> 8740e8a (Initial setup)
 import static java.util.Collections.sort;
 import static java.util.stream.Collectors.joining;
 
@@ -43,11 +46,16 @@ public class Validate implements ApplicationContextAware {
         validator = applicationContext.getBean(Validator.class);
     }
 
+<<<<<<< HEAD
     public static void validate(Class<? extends Record> type, Object... parameters) {
         var violations =
                 getValidator()
                         .forExecutables()
                         .validateConstructorParameters(getCanonicalConstructor(type), parameters);
+=======
+    public static <R> R validate(R record) {
+        var violations = getValidator().validate(record);
+>>>>>>> 8740e8a (Initial setup)
         if (!violations.isEmpty()) {
             List<String> messages = new ArrayList<>();
             violations.forEach(
@@ -57,6 +65,10 @@ public class Validate implements ApplicationContextAware {
             sort(messages); // to create the same error message for the same constraints
             throw new IllegalArgumentException(messages.stream().collect(joining(", ")));
         }
+<<<<<<< HEAD
+=======
+        return record;
+>>>>>>> 8740e8a (Initial setup)
     }
 
     private static Validator getValidator() {

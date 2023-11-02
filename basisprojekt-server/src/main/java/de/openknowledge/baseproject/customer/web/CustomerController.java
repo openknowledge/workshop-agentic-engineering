@@ -23,6 +23,10 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import de.openknowledge.baseproject.customer.domain.Customer;
 import de.openknowledge.baseproject.customer.domain.CustomerEntity;
+<<<<<<< HEAD
+=======
+import de.openknowledge.baseproject.customer.domain.CustomerId;
+>>>>>>> 8740e8a (Initial setup)
 import de.openknowledge.baseproject.customer.domain.CustomerService;
 import de.openknowledge.baseproject.todo.integration.TodoException;
 import jakarta.persistence.EntityNotFoundException;
@@ -56,18 +60,34 @@ public class CustomerController {
         return customerService.findAllCustomers().stream().map(toOverview()).toList();
     }
 
+<<<<<<< HEAD
     @GetMapping(path = "/{id}", produces = APPLICATION_JSON_VALUE)
     public Customer getCustomer(@PathVariable("id") Long id) {
+=======
+    // tag::path-validation[]
+    @GetMapping(path = "/{id}", produces = APPLICATION_JSON_VALUE)
+    public Customer getCustomer(@Valid @PathVariable("id") CustomerId id) {
+>>>>>>> 8740e8a (Initial setup)
         return customerService
                 .findCustomer(id)
                 .map(CustomerEntity::getCustomer)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Customer not found"));
     }
 
+<<<<<<< HEAD
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createCustomer(@Valid @RequestBody Customer customer) {
         try {
             long customerId = customerService.registerCustomer(customer).getId();
+=======
+    // end::path-validation[]
+
+    // tag::body-validation[]
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> createCustomer(@Valid @RequestBody Customer customer) {
+        try {
+            CustomerId customerId = customerService.registerCustomer(customer).getId();
+>>>>>>> 8740e8a (Initial setup)
             return ResponseEntity.created(createCustomerUri(customerId)).build();
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(BAD_REQUEST, e.getMessage());
@@ -76,8 +96,16 @@ public class CustomerController {
         }
     }
 
+<<<<<<< HEAD
     @PutMapping(path = "/{id}", consumes = APPLICATION_JSON_VALUE)
     public void updateCustomer(@PathVariable("id") Long id, @Valid @RequestBody Customer customer) {
+=======
+    // end::body-validation[]
+
+    @PutMapping(path = "/{id}", consumes = APPLICATION_JSON_VALUE)
+    public void updateCustomer(
+            @Valid @PathVariable("id") CustomerId id, @Valid @RequestBody Customer customer) {
+>>>>>>> 8740e8a (Initial setup)
         try {
             customerService.updateCustomer(id, customer);
         } catch (EntityNotFoundException e) {
@@ -89,7 +117,11 @@ public class CustomerController {
 
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(NO_CONTENT)
+<<<<<<< HEAD
     public void deleteCustomer(@PathVariable("id") Long id) {
+=======
+    public void deleteCustomer(@Valid @PathVariable("id") CustomerId id) {
+>>>>>>> 8740e8a (Initial setup)
         try {
             customerService.deleteCustomer(id);
         } catch (EntityNotFoundException e) {
@@ -99,10 +131,19 @@ public class CustomerController {
 
     private Function<CustomerEntity, CustomerOverview> toOverview() {
         return customer ->
+<<<<<<< HEAD
                 CustomerOverview.of(createCustomerUri(customer.getId()), customer.getCustomer());
     }
 
     private URI createCustomerUri(long customerId) {
         return URI.create("/api/customers/" + customerId);
+=======
+                CustomerOverview.newCustomerOverview(
+                        createCustomerUri(customer.getId()), customer.getCustomer());
+    }
+
+    private URI createCustomerUri(CustomerId customerId) {
+        return URI.create("/api/customers/" + customerId.customerId());
+>>>>>>> 8740e8a (Initial setup)
     }
 }

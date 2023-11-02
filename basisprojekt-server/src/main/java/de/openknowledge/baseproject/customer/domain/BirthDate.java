@@ -17,7 +17,15 @@ package de.openknowledge.baseproject.customer.domain;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
+<<<<<<< HEAD
 import java.time.LocalDate;
 
 @Embeddable
 public record BirthDate(@JsonValue LocalDate birthDate) {}
+=======
+import jakarta.validation.constraints.Past;
+import java.time.LocalDate;
+
+@Embeddable
+public record BirthDate(@JsonValue @Past LocalDate birthDate) {}
+>>>>>>> 8740e8a (Initial setup)

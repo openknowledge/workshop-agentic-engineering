@@ -15,6 +15,10 @@
  */
 package de.openknowledge.baseproject.customer.domain;
 
+<<<<<<< HEAD
+=======
+import static de.openknowledge.baseproject.customer.domain.CustomerId.newCustomerId;
+>>>>>>> 8740e8a (Initial setup)
 import static jakarta.persistence.GenerationType.SEQUENCE;
 import static java.util.Objects.requireNonNull;
 
@@ -68,8 +72,13 @@ public class CustomerEntity {
         // for JPA
     }
 
+<<<<<<< HEAD
     public Long getId() {
         return id;
+=======
+    public CustomerId getId() {
+        return newCustomerId(id);
+>>>>>>> 8740e8a (Initial setup)
     }
 
     public Customer getCustomer() {

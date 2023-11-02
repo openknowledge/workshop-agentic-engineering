@@ -19,6 +19,10 @@ Steps:
 . link:./setup_steps/tanstack-form.adoc[TanStack Form einrichten]
 . link:./setup_steps/frontend-testing.adoc[Frontend-Testing mit Playwright einrichten]
 . link:./setup_steps/ci-pipeline.adoc[Pipeline aufsetzen]
+<<<<<<< HEAD
+=======
+. link:./setup_steps/renovate.adoc[Renovate für Dependency-Updates einrichten]
+>>>>>>> 8740e8a (Initial setup)
 . link:./setup_steps/deployment.adoc[Branch auf OK Testumgebung deployen]
 . link:./setup_steps/monitoring.adoc[Monitoring einrichten]
 . link:./setup_steps/git-workflow.adoc[Git Workflow]

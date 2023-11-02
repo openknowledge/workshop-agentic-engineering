@@ -6,7 +6,11 @@ Base project template by open knowledge GmbH for starting new projects with a st
 
 - **Backend:** Java 21, Spring Boot 3.5.7, Spring Data JPA (EntityManager), PostgreSQL 17
 - **Frontend:** React 19.1, TypeScript 5.9, Vite 7.1
+<<<<<<< HEAD
 - **Build:** Maven multi-module (`pom.xml` at root), frontend-maven-plugin (Node v24.10.0)
+=======
+- **Build:** Maven multi-module (`pom.xml` at root), frontend-maven-plugin (Node v24.15.0)
+>>>>>>> 8740e8a (Initial setup)
 - **Database:** PostgreSQL 17, Flyway migrations, Testcontainers for tests
 - **Formatting:** Spotless (Google Java Format AOSP style) + Checkstyle (OK Coding Conventions) for Java; Prettier + ESLint for TypeScript/React
 - **Testing:** JUnit 5, Spring Boot Test, Testcontainers, AssertJ, RestClient

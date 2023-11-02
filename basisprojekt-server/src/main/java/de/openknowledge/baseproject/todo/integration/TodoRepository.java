@@ -17,7 +17,10 @@ package de.openknowledge.baseproject.todo.integration;
 
 import static java.util.Optional.ofNullable;
 
+<<<<<<< HEAD
 import de.openknowledge.baseproject.customer.domain.Email;
+=======
+>>>>>>> 8740e8a (Initial setup)
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -38,7 +41,11 @@ public class TodoRepository {
         this.restClient = builder.clone().baseUrl(properties.url()).build();
     }
 
+<<<<<<< HEAD
     public Optional<TodoUser> findUserByEmail(Email email) {
+=======
+    public Optional<TodoUser> findUserByEmail(UserEmail email) {
+>>>>>>> 8740e8a (Initial setup)
         try {
             List<TodoUser> users =
                     restClient

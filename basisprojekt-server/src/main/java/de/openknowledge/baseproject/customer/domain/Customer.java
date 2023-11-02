@@ -15,6 +15,10 @@
  */
 package de.openknowledge.baseproject.customer.domain;
 
+<<<<<<< HEAD
+=======
+import static de.openknowledge.baseproject.infrastructure.validation.Validate.validate;
+>>>>>>> 8740e8a (Initial setup)
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
@@ -88,8 +92,32 @@ public record Customer(
                 List<@Valid Contact> additionalPhoneNumbers,
         @Valid ExternalUserId externalUserId) {
 
+<<<<<<< HEAD
     public Customer withExternalUserId(ExternalUserId newExternalUserId) {
         return new Customer(
+=======
+    public static Customer newCustomer(
+            Name name,
+            Email email,
+            PhoneNumber phoneNumber,
+            BirthDate birthDate,
+            List<Email> additionalEmails,
+            List<Contact> additionalPhoneNumbers,
+            ExternalUserId externalUserId) {
+        return validate(
+                new Customer(
+                        name,
+                        email,
+                        phoneNumber,
+                        birthDate,
+                        additionalEmails,
+                        additionalPhoneNumbers,
+                        externalUserId));
+    }
+
+    public Customer withExternalUserId(ExternalUserId newExternalUserId) {
+        return newCustomer(
+>>>>>>> 8740e8a (Initial setup)
                 name,
                 email,
                 phoneNumber,

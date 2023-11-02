@@ -15,7 +15,11 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <skipFrontendTests>${skipTests}</skipFrontendTests>
+<<<<<<< HEAD
     <frontend.nodeVersion>v24.10.0</frontend.nodeVersion>
+=======
+    <frontend.nodeVersion>v24.15.0</frontend.nodeVersion>
+>>>>>>> 8740e8a (Initial setup)
   </properties>
 
   <build>
@@ -23,7 +27,11 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
+<<<<<<< HEAD
         <version>1.15.1</version>
+=======
+        <version>2.0.2</version>
+>>>>>>> 8740e8a (Initial setup)
         <configuration>
           <nodeVersion>${frontend.nodeVersion}</nodeVersion>
         </configuration>
@@ -157,7 +165,11 @@
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
+<<<<<<< HEAD
             <version>1.15.1</version>
+=======
+            <version>2.0.2</version>
+>>>>>>> 8740e8a (Initial setup)
             <configuration>
               <nodeVersion>${frontend.nodeVersion}</nodeVersion>
             </configuration>

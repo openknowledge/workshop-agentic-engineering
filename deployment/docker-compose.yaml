@@ -1,11 +1,19 @@
 services:
   basisprojekt-database:
+<<<<<<< HEAD
     image: postgres:17
+=======
+    image: postgres:18
+>>>>>>> 8740e8a (Initial setup)
     environment:
       POSTGRES_PASSWORD: ${APP_PG_PASSWORD}
 
   flyway:
+<<<<<<< HEAD
     image: flyway/flyway:10.22
+=======
+    image: flyway/flyway:13.10
+>>>>>>> 8740e8a (Initial setup)
     command: migrate -locations=filesystem:/flyway/sql,filesystem:/flyway/testdata -user=postgres -password=${APP_PG_PASSWORD} -connectRetries=60 -url=jdbc:postgresql://basisprojekt-database:5432/postgres
     depends_on:
       basisprojekt-database:
@@ -42,7 +50,11 @@ services:
       - ./configs/opentelemetry-collector-config.yaml:/etc/otel-collector-config.yaml:ro
 
   auth-proxy:
+<<<<<<< HEAD
     image: nginx:alpine
+=======
+    image: nginx:1.27-alpine
+>>>>>>> 8740e8a (Initial setup)
     depends_on:
       basisprojekt-server:
         condition: service_started

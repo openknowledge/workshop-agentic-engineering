@@ -15,7 +15,24 @@
  */
 package de.openknowledge.baseproject.todo.integration;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record Todo(ExternalUserId userId, Title title, boolean completed) {}
+=======
+import static de.openknowledge.baseproject.infrastructure.validation.Validate.validate;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.Valid;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record Todo(
+        @Valid ExternalUserId userId, @Valid Title title, @Valid CompletionState completed) {
+
+    public static Todo newTodo(
+            ExternalUserId userId, Title title, @Valid CompletionState completed) {
+        return validate(new Todo(userId, title, completed));
+    }
+}
+>>>>>>> 8740e8a (Initial setup)

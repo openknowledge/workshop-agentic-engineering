@@ -95,7 +95,11 @@ RUN --mount=type=cache,target=/root/.m2/repository,id=mvn-cache,sharing=locked \
 # ============================================================================
 # Stage 3: Runtime (Minimal JRE)
 # ============================================================================
+<<<<<<< HEAD
 FROM eclipse-temurin:21-jre-ubi10-minimal
+=======
+FROM eclipse-temurin:25-jre-ubi10-minimal
+>>>>>>> 8740e8a (Initial setup)
 
 WORKDIR /usr/app
 
