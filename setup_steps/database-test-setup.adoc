@@ -1,0 +1,89 @@
+= Database Test Setup
+
+Der Einsatz einer echten (also docker-basierten) Datenbank in den Tests
+führt zu erheblichen Performance-Einbußen der Testläufe (sei es lokal oder im CI-System).
+Das Starten des Docker-Containers,
+das Aufsetzen des Schemas und das Befüllen mit Testdaten dauert seine Zeit.
+
+Um diese Zeit zu minimieren, fahren wir mehrere Strategien.
+1. Um die Laufzeit des gesamten Builds zu reduzieren,
+starten wir die Datenbank einmal zu Beginn des Builds.
+2. Um das Schema nicht jedes Mal neu aufsetzen zu müssen,
+setzen wir es per Flyway-Migration auch zu Beginn des Builds auf.
+3. Um die Datenbank nicht nach jedem Test zurücksetzen zu müssen
+(bzw. Testdaten aufräumen zu müssen), setzen wir Transaction-Unit ein.
+Diese Bibliothek sorgt dafür, dass innerhalb des Tests kein Commit stattfindet.
+Stattdessen findet nach jedem Test ein Rollback statt.
+
+== Datenbank-Setup nur einmal pro Build
+
+Wir möchten, dass die Datenbank nur einmal pro Maven-Build gestartet wird.
+Um das zu erreichen, nutzen wir eine `DatabaseExtension` für JUnit
+(link:../basisprojekt-server/src/test/java/de/openknowledge/baseproject/infrastructure/test/DatabaseExtension.java[DatabaseExtension.java])
+In dieser Extension wird auch Flyway ausgeführt,
+so dass auch das Datenbank-Schema nur einmal pro Build ausgeführt wird.
+Sie bietet außerdem die Möglichkeit,
+ein oder mehrere Skripte mit initialen Testdaten zu hinterlegen.
+Auch diese werden dann nur einmalig in die Datenbank eingefügt.
+
+Die Datenbank-Extension kann mit folgender Annotation verwendet werden:
+
+[source]
+----
+include::../basisprojekt-server/src/test/java/de/openknowledge/baseproject/infrastructure/test/DatabaseTest.java[tags=annotation]
+----
+
+== Aufräumen der Datenbank nach jedem Test
+
+Tests verändern potenziell den Inhalt der Datenbank.
+Um die Datenbank nach jedem Test wieder in den Ausgangszustand zu versetzen,
+verwenden wir Transaction-Unit.
+Wenn damit ein Test mit `@RollbackAfterTest` annotiert wird,
+sorgt Transaction-Unit dafür,
+dass innerhalb des Tests keine Transaktion committed wird.
+Stattdessen wird ein `EntityManager#flush` ausgeführt,
+was zumindest auch dazu führt, dass alle Änderungen in die DB geschrieben werden. Am Ende des Tests wird dann allerdings ein Rollback der Transaktion durchgeführt.
+Dies führt dazu, dass die Datenbank in ihren Ausgangszustand zurück versetzt wird.
+
+Alle im Test verwendeten Annotations können in einer Annotation zusammegefasst werden:
+
+[source]
+----
+include::../basisprojekt-server/src/test/java/de/openknowledge/baseproject/infrastructure/test/IntegrationTest.java[tags=annotation]
+----
+
+Wichtig ist, dass die Datenbank-Extension *vor* der Spring-JUnit-Extension läuft,
+weil sie die DB-Properties für Spring setzt.
+Dies erreicht man,
+indem die zugehörige Annotation *über* der Annotation von Spring steht.
+
+== Beschleunigen der lokalen Ausführung einzelner Tests
+
+Auch beim Ausführen eines einzelnen Unit-Tests aus der IDE heraus,
+vergeht die meiste Zeit beim Warten auf den Start der Datenbank.
+Auch hierfür haben wir eine mögliche Optimierung:
+Wir nutzen das `reuse` Feature von Flyway.
+Mit diesem Feature wird die Datenbank am Ende der Testausführung nicht beendet,
+sondern läuft im Hintergrund weiter.
+Wird nun erneut ein Unit-Test über die IDE gestartet,
+wird die bestehende Datenbank wiederverwendet.
+Darüber hinaus ist auch die Database-Extension so geschrieben,
+dass sie die Wiederverwendung erkennt
+und auch Schema und Testdaten nicht neu erzeugt weden.
+Dies erhöht die Ausführungsgeschwindigkeit erheblich.
+Das Feature hat den Nachteil,
+dass die Datenbank wenn nötig von Hand in Docker heruntergefahren werden muss,
+weil sie niemals von Testcontainers beendet wird.
+Aus diesem Grund muss es in Testcontainers explizit aktiviert werden.
+Dazu muss man in der Datei `.testcontainers.properties` die vermutlich schon im User-Home liegt
+(wenn nicht, kann sie angelegt werden), folgende Zeile hinzufügen:
+
+[source]
+----
+testcontainers.reuse.enable=true
+----
+
+Da das Schema nicht neu aufgesetzt wird,
+muss insbesondere beim Wechseln des Branches darauf geachtet werden,
+dass der Datenbank-Docker-Container manuell heruntergefahren wird.
+

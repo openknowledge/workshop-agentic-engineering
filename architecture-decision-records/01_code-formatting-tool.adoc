@@ -1,0 +1,44 @@
+= Wir benutzen Spotless zur Formatierung von Java Code und das Maven Checkstyle Plugin mit den OK Coding Conventions
+
+* Status: decided
+* Deciders: GWI, SDI, ALI
+* Date: 15.09.2025
+
+== Kontext und Problembeschreibung
+
+Ein gemeinsamer Code-Style sorgt für konsistenten, gut lesbaren Code, in dem sich alle Teammitglieder schnell zurechtfinden.
+Dadurch lassen sich Diskussionen über Formatierungen vermeiden und Code-Reviews können sich auf fachliche Inhalte konzentrieren.
+Durch automatische Codeformatierung wird ein aufwendiges manuelles Beheben von Style-Verletzungen vermieden.
+
+== Diskutierte Optionen
+
+* Spotless wird lokal benutzt, um den Code zu formatieren und Checkstyle wird in der Pipeline genutzt, um die Coding Conventions sicherzustellen.
+* Spotless wird lokal benutzt, um den Code zu formatieren und auch in der Pipeline, um die Coding Conventions sicherzustellen.
+* Spotless wird lokal benutzt, um den Code zu formatieren und zusammen mit Checkstyle in der Pipeline, um die Coding Conventions sicherzustellen.
+* Das Checkstyle-Formatter-Maven-Plugin wird lokal benutzt, um den Code zu formatieren und Checkstyle in der Pipeline.
+
+Weitere diskutierte Tools
+
+* Prettier for Java
+* Spring Java Format
+
+== Out of Scope
+
+Im Rahmen dieser Entscheidung haben wir das Thema "Formatting on Save" diskutiert, aber entschieden, dass es nicht zur Entscheidungsfindung beiträgt.
+
+== Entscheidungstreiber
+
+Open knowledge hat weitreichende Formatierungsregeln (inkl. Begründung).
+Diese können durch den Einsatz von Spotless weiter verwendet werden. Dies bieten andere Varianten nicht.
+
+== Ergebnis
+
+Spotless wird lokal benutzt (und kann optional als Save-Action oder Pre-Commit-Hook eingebunden werden).
+Spotless (als Check) und Checkstyle werden in der Pipeline genutzt, um die Formatierung sicherzustellen.
+
+== Vor- und Nachteile der Optionen
+
+Vorteil von Checkstyle ist, dass wir bei open knowledge ausgereifte Regeln und eine fertige Konfiguration haben.
+Nachteil: Es gibt keinen ausgereiften Formatter für diese Regeln.
+Vorteil von Spotless mit Google Format: Die Formatierung entspricht weitestgehend den OK Coding Conventions.
+Dies ist auch gleichzeitig der Nachteil der anderen diskutierten Formatter. Diese entsprechen den OK Coding Conventions nicht.

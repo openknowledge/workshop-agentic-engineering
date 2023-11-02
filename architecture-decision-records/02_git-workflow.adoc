@@ -1,0 +1,47 @@
+= ADR: Git-Workflow mit Rebase und Squash
+:toclevels: 3
+:icons: font
+
+== Metadaten
+
+[cols="1,3"]
+|===
+| Status | Decided
+| Deciders |
+| Datum |
+|===
+
+== Kontext und Problembeschreibung
+
+Ein einheitlicher Git-Workflow sorgt für eine saubere, nachvollziehbare Commit-Historie. Dadurch lassen sich Änderungen leichter nachverfolgen und Code-Reviews werden übersichtlicher.
+
+== Entscheidungstreiber
+
+* Saubere, lineare Commit-Historie
+* Nachvollziehbare Änderungen pro Ticket
+* Einfache Zuordnung von Commits zu Tickets
+
+== Diskutierte Optionen
+
+
+. Rebase + Squash vor Merge Request
+
+== Ergebnis
+
+Wir verwenden Rebaase + Squash vor dem Merge Request
+
+== Vor- und Nachteile
+
+[cols="1,1"]
+|===
+| Vorteile | Nachteile
+
+| Lineare, übersichtliche Historie
+| Erfordert Git-Kenntnisse (Rebase, Squash)
+
+| Ein Commit pro Feature/Bugfix
+| Force-Push auf Feature-Branches nötig
+
+| Einfache Zuordnung zu Tickets
+| —
+|===

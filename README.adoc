@@ -1,0 +1,26 @@
+== Initiales Projekt Setup
+
+Falls ein neues Projekt mit "Standard" Tech-Stack gestartet werden soll, ist hier ein kleiner
+Guide wie das Projekt aufgesetzt werden soll.
+
+Steps:
+
+. link:./setup_steps/initial_setup.adoc[Initiales Projekt anlegen]
+. link:./setup_steps/maven_build.adoc[Maven-Build aufsetzen]
+. link:./setup_steps/implementing_backend_formatter.adoc[Backend Formatter und Linter einrichten]
+. link:./setup_steps/linting-formatting.adoc[Frontend Formatter und Linter einrichten]
+. link:./setup_steps/dev_setup.adoc[Lokales Entwicklungs-Setup aufsetzen]
+. link:./setup_steps/database.adoc[Datenbank-Setup vorbereiten]
+. link:./setup_steps/database-test-setup.adoc[Datenbank für das Testen einsetzen]
+. link:./setup_steps/tanstack-router.adoc[TanStack Router einrichten]
+. link:./setup_steps/tanstack-query.adoc[TanStack Query einrichten]
+. link:./setup_steps/tanstack-table.adoc[TanStack Table einrichten]
+. link:./setup_steps/zod.adoc[Zod einrichten]
+. link:./setup_steps/tanstack-form.adoc[TanStack Form einrichten]
+. link:./setup_steps/frontend-testing.adoc[Frontend-Testing mit Playwright einrichten]
+. link:./setup_steps/ci-pipeline.adoc[Pipeline aufsetzen]
+. link:./setup_steps/deployment.adoc[Branch auf OK Testumgebung deployen]
+. link:./setup_steps/monitoring.adoc[Monitoring einrichten]
+. link:./setup_steps/git-workflow.adoc[Git Workflow]
+. link:./setup_steps/external-client-wiremock.adoc[Externe Clients anbinden]
+. link:./setup_steps/server-side-validation.adoc[Serverseitige Validierung]

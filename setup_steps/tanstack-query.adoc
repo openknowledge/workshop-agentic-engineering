@@ -1,0 +1,134 @@
+= TanStack Query Setup
+
+== Warum TanStack Query?
+
+**TanStack Query** ist eine Bibliothek für asynchrones State-Management in React.
+Im Vergleich zu manuellem Datenabruf mit `useEffect` und `useState` übernimmt TanStack Query automatisch Caching, Hintergrundaktualisierungen, Ladezustände und Fehlerbehandlung –
+und ermöglicht dabei typsichere Query-Definitionen über `queryOptions`.
+
+== Installation
+
+[source,bash]
+----
+npm install @tanstack/react-query
+----
+
+=== Package.json
+
+[source,json]
+----
+include::../basisprojekt-client/package.json[lines=16]
+----
+
+== Ordnerstruktur
+
+Für jedes Feature gibt es eine dedizierte API-Schicht unter `src/features/<feature>/api/`,
+die in zwei Dateien aufgeteilt ist:
+
+[source]
+----
+src/
+  features/
+    customers/
+      api/
+        customerApi.ts      # Fetch-Funktionen (HTTP-Aufrufe)
+        customerQueries.ts  # TanStack Query Hooks und queryOptions
+----
+
+`customerApi.ts` enthält ausschließlich die Fetch-Funktionen.
+`customerQueries.ts` definiert die Query Keys, `queryOptions` und Mutation Hooks.
+
+== QueryClient einrichten
+
+Der `QueryClient` wird einmalig in `main.tsx` erstellt und über den `QueryClientProvider` der gesamten Anwendung bereitgestellt.
+Über `defaultOptions.queries.staleTime` wird festgelegt, wie lange gecachte Daten als aktuell gelten.
+
+Der `queryClient` wird außerdem als Router-Kontext übergeben, damit Routen-Loader
+Daten vor dem Rendern vorladen können.
+
+[%collapsible, title="src/main.tsx"]
+====
+[source,tsx]
+----
+include::../basisprojekt-client/src/main.tsx[]
+----
+====
+
+== API Layer
+
+`customerApi.ts` enthält die reinen Fetch-Funktionen ohne Query-Abhängigkeiten.
+Optionale Felder werden vor dem Senden bereinigt: leere Strings werden zu `null` konvertiert.
+
+[%collapsible, title="src/features/customers/api/customerApi.ts"]
+====
+[source,ts]
+----
+include::../basisprojekt-client/src/features/customers/api/customerApi.ts[]
+----
+====
+
+== Query Keys und queryOptions
+
+Query Keys identifizieren gecachte Daten eindeutig.
+Sie werden in einem zentralen `customerKeys`-Objekt definiert, um Konsistenz sicherzustellen.
+
+`queryOptions` fasst Query Key und Query-Funktion zusammen und liefert ein typsicheres Objekt,
+das sowohl in Routen-Loadern als auch in `useSuspenseQuery` verwendet werden kann.
+
+[%collapsible, title="src/features/customers/api/customerQueries.ts"]
+====
+[source,ts]
+----
+include::../basisprojekt-client/src/features/customers/api/customerQueries.ts[]
+----
+====
+
+== Daten abfragen
+
+=== Vorladen mit dem Routen-Loader
+
+In der Route wird `queryClient.ensureQueryData` im `loader` aufgerufen.
+Dadurch werden die Daten geladen, bevor die Komponente gerendert wird,
+sodass kein Ladezustand in der Komponente behandelt werden muss.
+
+.Loader in der Kundenliste (src/routes/customers/index.tsx)
+[source,tsx]
+----
+include::../basisprojekt-client/src/routes/customers/index.tsx[lines=6..11]
+----
+
+=== Daten in der Komponente lesen
+
+`useSuspenseQuery` liest die bereits gecachten Daten aus dem Loader.
+Da der Loader die Daten garantiert vorlädt, ist `data` niemals `undefined`.
+
+[%collapsible, title="src/routes/customers/index.tsx"]
+====
+[source,tsx]
+----
+include::../basisprojekt-client/src/routes/customers/index.tsx[]
+----
+====
+
+[%collapsible, title="src/routes/customers/editCustomer.tsx"]
+====
+[source,tsx]
+----
+include::../basisprojekt-client/src/routes/customers/editCustomer.tsx[]
+----
+====
+
+== Daten mutieren
+
+`useMutation` kapselt den HTTP-Schreibaufruf.
+Nach erfolgreicher Mutation werden betroffene Queries über `queryClient.invalidateQueries` invalidiert,
+sodass TanStack Query die Daten automatisch neu lädt.
+
+.Mutation Hook (src/features/customers/api/customerQueries.ts)
+[source,ts]
+----
+include::../basisprojekt-client/src/features/customers/api/customerQueries.ts[lines=22..30]
+----
+
+Der Hook gibt das Mutations-Objekt zurück; `isPending` zeigt an, ob eine Mutation läuft,
+und wird verwendet, um den Speichern-Button während des Sendens zu deaktivieren.

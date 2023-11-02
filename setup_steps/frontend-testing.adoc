@@ -1,0 +1,60 @@
+= Frontend-Testing mit Playwright
+
+== Warum Playwright?
+
+**Playwright** ist ein End-to-End-Testframework von Microsoft,
+das Browser-Interaktionen automatisiert und damit das gesamte Frontend
+– inklusive Routing, API-Kommunikation und UI-Verhalten –
+und in unserem Fall auch das Backend in einer realistischen Umgebung testet.
+
+Gute Tests testen das fachliche Verhalten und keine Implementierungsdetails.
+Im Gegensatz zu rein unit-basierten Ansätzen stellt Playwright sicher,
+dass die Anwendung aus Nutzerperspektive korrekt funktioniert.
+
+Bei uns startet das Playwright-Setup per Docker auch das Backend, die Datenbank
+und Mocks für eventuelle Umsysteme,
+so dass echte End-to-End-Tests durchgeführt werden.
+
+Das Setup von Playwright inkl. Docker
+findest du unter link:./playwright.adoc[Playwright Konfiguration]
+
+=== Ausnahme: Vitest und Testing Library
+
+Für einzelne UI-Komponenten können *zusätzlich* Tests
+mit **Vitest** und **Testing Library** geschrieben werden.
+Diese sind optional und ergänzen die Playwright-Tests – sie ersetzen sie nicht.
+Sinnvoll sind sie vor allem für Komponenten mit komplexer interner Logik,
+die sich isoliert gut testen lassen (z.B. Formularvalidierung, Fehleranzeigen).
+
+Das Setup von Vitest inkl. Testing Library
+findest du unter link:./testing-library.adoc[Vitest und Testing Library Konfiguration]
+
+=== Testabdeckung im Frontend
+
+Wir streben im Frontend eine kombinierte Testabdeckung
+(bestehend aus der Abdeckung der Playwright-Tests und der Abdeckung der Unit-Tests)
+von 95% an.
+
+Das Setup dazu findest du unter link:./frontend-coverage.adoc[Code Coverage Konfiguration im Frontend]
+
+== Ordnerstruktur
+
+[source]
+----
+basisprojekt-client/
+  e2e/                          # Playwright End-to-End-Tests
+    customers/
+      customers.spec.ts         # Tests für das Customer-Feature
+    global-setup.ts             # Startet den Backend-Stack via testcontainers
+    global-teardown.ts          # Fährt den Stack nach den Tests herunter
+    dockerEnvironment.ts        # Teilt die Compose-Environment-Referenz zwischen Setup/Teardown
+  tests/                        # Vitest Unit-Tests
+    components/
+      FormField.test.tsx        # Optionaler Vitest-Komponententest
+    features/
+      customers/
+        components/
+          CustomerForm.test.tsx # Optionaler Vitest-Komponententest
+    setup.ts                    # Vitest-Setup inkl. Coverage-Snapshot-Capture
+  playwright.config.ts
+----

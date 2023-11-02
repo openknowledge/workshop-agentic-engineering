@@ -1,0 +1,101 @@
+= Linting und Formatting Setup
+
+== Warum ESLint und Prettier?
+
+**ESLint** analysiert den Code auf Fehler, potenzielle Bugs und Stilprobleme. Es hilft dabei, Code-Qualität zu sichern und häufige Fehler zu vermeiden.
+
+**Prettier** formatiert den Code automatisch nach einheitlichen Regeln. Es verhindert Diskussionen über Code-Stil im Team und sorgt für konsistente Formatierung.
+
+== ESLint
+
+=== Installation
+
+[source,bash]
+----
+npm install --save-dev eslint @eslint/js globals eslint-plugin-react-hooks eslint-plugin-react-refresh typescript-eslint
+----
+
+=== Package.json
+
+[source,json]
+----
+"eslint": "^9.36.0",
+"@eslint/js": "^9.36.0",
+"eslint-plugin-react-hooks": "^5.2.0",
+"eslint-plugin-react-refresh": "^0.4.22",
+"globals": "^16.4.0",
+"typescript-eslint": "^8.45.0"
+----
+
+**globals**: Definiert globale Variablen (z.B. `window`, `document` für Browser), damit ESLint diese als verfügbar erkennt und keine Fehler meldet.
+
+**eslint-plugin-react-hooks**: Prüft die korrekte Verwendung von React Hooks (z.B. dass Hooks nur in Funktionskomponenten verwendet werden).
+
+**eslint-plugin-react-refresh**: Stellt sicher, dass Komponenten mit Vite's Hot Module Replacement (HMR) kompatibel sind.
+
+=== Konfiguration
+
+Konfigurationsdatei: `eslint.config.js`
+
+Die Konfigurationsdatei definiert:
+
+* **files**: Welche Dateien geprüft werden sollen (z.B. `*.ts`, `*.tsx`)
+* **extends**: Welche Regel-Sets verwendet werden (z.B. `recommended`)
+* **languageOptions**: ECMAScript-Version und verfügbare globale Variablen
+* **plugins**: Zusätzliche Plugins für spezifische Prüfungen
+* **rules**: Eigene Regeln oder Überschreibung von Standard-Regeln
+* **ignores**: Welche Dateien/Ordner ignoriert werden sollen
+
+=== Scripts
+
+[source,bash]
+----
+npm run lint          # Code prüfen
+npm run lint:fix      # Code prüfen und automatisch beheben
+----
+
+== Prettier
+
+=== Installation
+
+[source,bash]
+----
+npm install --save-dev prettier
+----
+
+=== Package.json
+
+[source,json]
+----
+"prettier": "^3.4.2"
+----
+
+=== Konfiguration
+
+Konfigurationsdatei: `.prettierrc`
+
+Die Konfigurationsdatei definiert:
+
+* **semi**: Semikolons am Zeilenende (true/false)
+* **singleQuote**: Einfache statt doppelte Anführungszeichen (true/false)
+* **printWidth**: Maximale Zeilenlänge
+* **tabWidth**: Anzahl der Leerzeichen pro Einrückung
+* **useTabs**: Tabs statt Leerzeichen verwenden (true/false)
+* **trailingComma**: Trailing Commas in Arrays/Objekten ("none"/"es5"/"all")
+* **arrowParens**: Klammern um Arrow-Function-Parameter ("always"/"avoid")
+* **endOfLine**: Zeilenende-Format ("lf"/"crlf"/"auto")
+
+=== Scripts
+
+[source,bash]
+----
+npm run prettier        # Code formatieren
+npm run prettier:check  # Formatierung prüfen (ohne Änderungen)
+----
+
+== IntelliJ IDEA Setup
+
+Aktivierung des Auto-Save für ESLint und Prettier:
+
+Settings → Languages & Frameworks → JavaScript → Prettier → Run on save for files
+Settings → Languages & Frameworks → JavaScript → Code Quality Tools → ESLint → Run eslint --fix on save

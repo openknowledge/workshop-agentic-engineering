@@ -1,0 +1,40 @@
+= Maven Build
+
+Um den Client in ein JAR zu verpacken und vom Server auszuliefern zu lassen
+verwenden wir das Maven-Frontend-Plugin.
+
+Füge dazu folgende pom.xml dem Client-Ordner hinzu:
+
+[%collapsible, title="client/pom.xml"]
+====
+[source,xml]
+----
+include::../basisprojekt-client/pom.xml[]
+----
+====
+
+Dadurch baut Maven das Projekt mit npm und verpackt es so in ein JAR,
+dass es im Server als normale Maven-Abhängigkeit eingetragen werden kann:
+
+[source,xml, title="server/pom.xml"]
+----
+include::../basisprojekt-server/pom.xml[tags=client-dependency]
+----
+
+Auf oberster Ebene wollen wir das ganze Projekt bauen können,
+indem wir folgenden Befehl ausführen:
+
+[source]
+----
+mvn install
+----
+
+Dazu fügen wir auf oberster Ebene folgende Datei hinzu:
+
+[%collapsible, title="pom.xml"]
+====
+[source,xml]
+----
+include::../pom.xml[]
+----
+====

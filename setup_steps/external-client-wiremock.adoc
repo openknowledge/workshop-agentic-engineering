@@ -1,0 +1,94 @@
+= Externen Service anbinden und mit WireMock testen
+
+Viele Anwendungen müssen mit externen HTTP-Services sprechen
+(Payment-Provider, Identity-Provider, Fachverfahren, Datenanreicherung, ...).
+Wir zeigen die Anbindung am Beispiel "{JSON} Placeholder"-API,
+die für neu angelegte Kunden einen externen User anlegt
+und eine Willkommens-Todo erzeugt:
+link:https://jsonplaceholder.typicode.com[{JSON} Placeholder]
+
+Zum Testen verwenden wir **WireMock**.
+WireMock kann sowohl für die Integrationstests in Java,
+als auch für die lokale Entwicklung
+und auch für die End-to-End-Tests mit Playwright verwendet werden.
+Dazu verwenden wir einerseits eine WireMock-JUnit-Extension
+(link:../basisprojekt-server/src/test/java/de/openknowledge/baseproject/infrastructure/test/WireMock.java[WireMock.java]
+und link:../basisprojekt-server/src/test/java/de/openknowledge/baseproject/infrastructure/test/WireMockExtension.java[WireMockExtension.java])
+und andererseits konfigurieren wir WireMock im Docker-Compose.
+
+Die Wiremock-Konfiguration legen wir auf oberster Ebene im Ordner `wiremock` ab,
+damit sie sowohl im Java-Code als auch von Docker-Compose verwendet werden kann.
+
+== Einsatz von WireMock in Java
+
+Neben der obigen Extension benötigen wir die Dependency zu WireMock Standalone:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.wiremock</groupId>
+    <artifactId>wiremock-standalone</artifactId>
+    <version>3.9.2</version>
+    <scope>test</scope>
+</dependency>
+----
+
+=== Stub-Mappings als JSON-Dateien
+
+WireMock unterstützt zwei Konfigurations-Wege:
+programmatisch in Java oder als JSON-Dateien im Ordner `mappings/`.
+Wir nutzen die JSON-Variante,
+weil dieselben Mappings dann auch von einem im Docker Compose gestarteten WireMock
+für das lokale Testen im Browser verwendet werden können
+(siehe <<Local Setup via Docker Compose>>).
+
+Alle Mappings liegen im Wurzelverzeichnis unter `wiremock/mappings/`.
+
+Die WireMock-Doku beschreibt alle verfügbaren Matcher unter
+link:https://wiremock.org/docs/request-matching/[Wiremock]
+
+=== WireMock im Integrationstest starten
+
+Der WireMock-Server wird durch die Extension einmalig gestartet
+und am Ende wieder gestoppt.
+Über `usingFilesUnderDirectory("../wiremock")` liest er die JSON-Mappings ein.
+Der Port wird dynamisch vergeben (`dynamicPort()`),
+damit parallel laufende Tests sich nicht in die Quere kommen.
+In der Extension wird die Spring-Property mit dem dynamischen Port
+als System-Property gesetzt (wie auch bei der DatabaseExtension).
+Damit das funktioniert, muss die @Wiremock-Anntotation im Test **vor**
+der @SpringBootTest-Annotation stehen.
+Dadurch wird die Wiremock-Extension vor der Spring-Extension aufgerufen,
+so dass die Property vor dem Start des Spring-Servers gesetzt wird.
+
+=== Recording-Modus für die Erstinbefüllung
+
+Beim ersten Anbinden eines echten externen Services kennt man dessen Payloads
+oft nur ungefähr.
+WireMock bietet dafür einen Recording-Modus.
+Falls ihr diesen benutzen wollt, werft dazu gerne einen Blick in die Wiremock Doku.
+
+[[Local Setup via Docker Compose]]
+== Lokaler Betrieb via Docker Compose
+
+Damit die Anwendung auch im lokalen Docker-Compose-Setup
+nicht gegen die echte externe API laufen muss,
+starten wir dort ebenfalls einen WireMock-Container.
+Er liest dieselben Mappings ein,
+so dass sich das lokale Verhalten mit dem im Test deckt:
+
+[source,yaml]
+----
+include::../docker-compose.yaml[tags=wiremock]
+----
+
+Der Backend-Container erhält die interne WireMock-URL als Umgebungsvariable:
+
+[source,yaml]
+----
+include::../docker-compose.yaml[tags=database-configuration]
+----
+
+Der Port `8089` mappt WireMock zusätzlich auf den Host,
+so dass man beim Debugging von außen (z.B. über `curl` oder den Browser)
+gegen `http://localhost:8089/__admin` die aktuellen Mappings inspizieren kann.

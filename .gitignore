@@ -1,0 +1,8 @@
+.*
+!.gitlab-ci.yml
+!.gitignore
+!.dockerignore
+!.claude/
+.claude/settings.local.json
+*/target/
+*/node/

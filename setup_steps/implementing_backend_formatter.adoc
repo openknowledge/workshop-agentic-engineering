@@ -1,0 +1,50 @@
+== Backend Formatter und Linter
+
+Für das Backend verwenden wir Spotless als Formatter und Checkstyle als Linter. Spotless ist ein relativ verbreitetes Tool zur Code-Formatierung, das verschiedene Formatter unterstützt, darunter auch Google Java Format, das den Open Knowledge Coding Conventions sehr nahe kommt. Darüber hinaus linten wir mit Checkstyle, da nicht alle Regeln der Open Knowledge Coding Conventions automatisch formatiert werden können.
+
+=== Spotless konfigurieren
+
+Füge folgende Konfiguration zu der `pom.xml` Datei im Backend Projekt hinzu:
+
+[source,xml, title="server/pom.xml"]
+----
+include::../basisprojekt-server/pom.xml[tags=spotless-config]
+----
+
+=== Checkstyle konfigurieren
+
+Kopiere alle dateien aus `src/main/checkstyle` in dein Projekt
+
+Achte darauf den Header entsprechend deiner Lizenz im Projekt (mit Kunden abstimmen) anzupassen.
+
+Füge folgende Konfiguration zu der `pom.xml` Datei im Backend Projekt hinzu:
+
+[source,xml]
+----
+include::../basisprojekt-server/pom.xml[tags=checkstyle-config]
+----
+
+Die Formatierungsregel und die Linting-Regeln werden automatisch mit 
+
+[source]
+----
+$ mvn validate
+----
+
+überprüft.
+
+Um den Code zu formatieren, kann folgender Befehl ausgeführt werden:
+
+[source,xml]
+----
+$ mvn spotless:apply
+----
+
+Dieser Befehl kann auch als Pre-Push Hook oder als "Format on Save" in der IDE konfiguriert werden.
+
+Spotless kann den Pre-commit hook auch automatisch einrichten:
+
+[source]
+----
+$ mvn spotless:install-git-pre-push-hook
+----

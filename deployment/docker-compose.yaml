@@ -1,0 +1,79 @@
+services:
+  basisprojekt-database:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${APP_PG_PASSWORD}
+
+  flyway:
+    image: flyway/flyway:10.22
+    command: migrate -locations=filesystem:/flyway/sql,filesystem:/flyway/testdata -user=postgres -password=${APP_PG_PASSWORD} -connectRetries=60 -url=jdbc:postgresql://basisprojekt-database:5432/postgres
+    depends_on:
+      basisprojekt-database:
+        condition: service_started
+    volumes:
+      - ../basisprojekt-server/src/main/resources/db/migration:/flyway/sql
+
+  basisprojekt-server:
+    image: registry.gitlab.com/openknowledge-gmbh/openknowledge/projects/basisprojekt-setup/backend:${APP_IMAGE_TAG}
+    pull_policy: always
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_DATASOURCE_URL: jdbc:postgresql://basisprojekt-database:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${APP_PG_PASSWORD}
+      OTEL_SERVICE_NAME: basisprojekt-server
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    depends_on:
+      basisprojekt-database:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+      flyway:
+        condition: service_completed_successfully
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.150.1
+    command: [ "--config=/etc/otel-collector-config.yaml" ]
+    environment:
+      OTLP_TOKEN: ${OTLP_TOKEN}
+      OTLP_ENVIRONMENT: ${OTLP_ENVIRONMENT}
+    volumes:
+      - ./configs/opentelemetry-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+
+  auth-proxy:
+    image: nginx:alpine
+    depends_on:
+      basisprojekt-server:
+        condition: service_started
+    configs:
+      - source: nginx_conf
+        target: /etc/nginx/nginx.conf
+      - source: htpasswd
+        target: /etc/nginx/.htpasswd
+    # If you're running plain docker-compose (not Swarm), Docker "configs" are not available.
+    # Mount a host file as a fallback so you can edit and verify the htpasswd locally:
+
+configs:
+  nginx_conf:
+    content: |
+      events {}
+      http {
+        server {
+          listen 80;
+          server_name _;
+      
+          # Basic Auth Einstellungen
+          auth_basic "Geschützter Bereich";
+          auth_basic_user_file /etc/nginx/.htpasswd;
+      
+          location / {
+            # Ziel-Server (Backend)
+            proxy_pass http://basisprojekt-server:8080;
+          }
+        }
+      }
+  htpasswd:
+    # user: okuser, password: #wissenteilen
+    content: |
+      okuser:$$apr1$$9nyPSz4W$$sJ6me8CfJPYacD.e.hfyz1

@@ -1,0 +1,81 @@
+= Development Setup
+
+In diesem Abschnitt werden zwei Themen behandelt.
+Einerseits geht es darum, wie das Entwickler-Setup aussehen muss,
+um lokal effektiv ein Feature vertikal (also in Client und Server) umzusetzen.
+Außerdem ist es wünschenswert, dass jeder, der das Projekt auscheckt, es direkt ausprobieren kann.
+
+== Lokale Entwicklung
+
+Um ein Feature vertikal zu entwicklen, müssen Client und Server
+im Idealfall mit automatischem Reload bei Änderungen gestartet werden.
+Wie das geschehen kann, wurde bereits in Schritt 1 beschrieben.
+
+Damit in diesem lokalen Setup der Client mit dem Server kommunizieren kann,
+muss in `<projectname>-client/vite.config.ts` der laufende Server
+als Proxy-Server eingetragen werden.
+
+Füge dazu folgenden Code-Schnipsel der vite.config.ts hinzu:
+
+[%collapsible, title="basisprojekt-client/vite.config.ts"]
+====
+[source,ts]
+----
+include::../basisprojekt-client/vite.config.ts[tags=proxy-config]
+----
+====
+
+== Lokales Starten der gesamten App.
+
+Nach dem Checkout soll das Projekt direkt gebaut und gestartet werden können.
+Dies wird über Docker und Docker Compose realisiert.
+
+=== Die Docker-Compose-Datei
+
+Der Eintrag in der Datei `docker-compose.yaml` sorgt dafür,
+dass das lokale Dockerfile zum Bauen verwendet wird und dass der Port weitergeleitet wird.
+
+[%collapsible, title="docker-compose.yaml"]
+====
+[source,ts]
+----
+include::../docker-compose.yaml[tags=server]
+----
+====
+
+=== Die Docker-Datei
+
+Dockerfiles können in mehrere Stages eingeteilt werden.
+Das ist sinnvoll, weil unterschiedliche Stages Daten unterschiedlich cachen können
+und weil das finale Docker-Image dann nicht so groß sein muss.
+
+In diesem Fall ist es sinnvoll, insgesamt drei Stages zu haben.
+
+[%collapsible, title="Dockerfile - Client Stage"]
+====
+Die Client-Build-Stage cached die Node-Installation, die Typescript-Dependencies und baut den Client.
+[source]
+----
+include::../Dockerfile[tags=client-build]
+----
+====
+
+[%collapsible, title="Dockerfile - Server Stage"]
+====
+Die Server-Build-Stage verwendet das JAR aus der Client-Build-Stage,
+cached die Maven-Dependencies und baut das executable Server JAR.
+[source]
+----
+include::../Dockerfile[tags=server-build]
+----
+====
+
+[%collapsible, title="Dockerfile - Runtime Stage"]
+====
+Die Runtime-Stage kopiert das executable Server JAR und führt es aus.
+[source]
+----
+include::../Dockerfile[tags=runtime]
+----
+====
+

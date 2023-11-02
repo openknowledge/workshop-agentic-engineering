@@ -1,0 +1,40 @@
+= Wir verwenden kurze Ordnernamen
+
+* Status: decided
+* Deciders: GWI, SDI, ALI
+* Date: 12.01.2026
+
+== Kontext und Problembeschreibung
+
+Bei der täglichen Arbeit mit dem Projekt navigieren Entwickler häufig zwischen verschiedenen Modulen. Lange Ordnernamen wie `basisprojekt-client` und `basisprojekt-server` erfordern mehr Tippaufwand bei der Navigation im Terminal und erhöhen die visuelle Komplexität in der IDE.
+
+== Diskutierte Optionen
+
+* Ordnernamen entsprechen den Maven-Modulnamen (z.B. `basisprojekt-client`, `basisprojekt-server`)
+* Ordnernamen entsprechen den Maven-Modulnamen (z.B. `client-basisprojekt`, `server-basisprojekt`)
+* Kurze Ordnernamen, Maven-Modulnamen bleiben unverändert (z.B. `client`, `server`)
+
+== Entscheidungstreiber
+
+* Reduzierung des Tippaufwands bei der Navigation
+* Bessere Übersichtlichkeit in der IDE
+* Maven-Modulnamen sollen für Build und Deployment unverändert bleiben
+
+== Ergebnis
+
+Wir verwenden folgende Ordnernamen (`client-basisprojekt`, `server-basisprojekt`). Die Maven-Modulnamen bleiben auf diese Art vollständig.
+
+== Vor- und Nachteile der Optionen
+
+=== Lange Ordnernamen (entsprechend Maven-Modulnamen)
+
+* Vorteil: Konsistenz zwischen Ordner- und Modulnamen
+* Vorteil: Codecompletion funktioniert durch die Drehung des Projektnamens mit dem Prefix server/client
+* Nachteil: Potenziell mehr Tippaufwand bei der Navigation
+* Nachteil: Längere Pfade in der IDE
+
+=== Kurze Ordnernamen
+
+* Vorteil: Schnellere Navigation im Terminal
+* Vorteil: Bessere Übersichtlichkeit
+* Nachteil: Ordnername und Maven-Modulname unterscheiden sich

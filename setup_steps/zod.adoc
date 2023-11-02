@@ -1,0 +1,75 @@
+= Zod Setup
+
+== Warum Zod?
+
+**Zod** ist eine TypeScript-first Schema-Validierungsbibliothek.
+Im Vergleich zu manuellen Typprüfungen oder separaten Validierungsregeln definiert man das Schema einmalig und leitet daraus automatisch den TypeScript-Typ ab –
+sodass Laufzeitvalidierung und statische Typsicherheit immer synchron bleiben.
+Zod implementiert das **Standard-Schema**-Interface und ist damit direkt mit TanStack Form kompatibel.
+
+== Installation
+
+[source,bash]
+----
+npm install zod
+----
+
+=== Package.json
+
+[source,json]
+----
+include::../basisprojekt-client/package.json[lines=22]
+----
+
+== Ordnerstruktur
+
+Zod-Schemata für Features liegen unter `src/domain/` (oder `src/features/<feature>/schemas/`):
+
+[source]
+----
+src/
+  domain/
+    Customer.ts   # Zod-Schema + abgeleiteter TypeScript-Typ
+----
+
+== Schema definieren
+
+Ein Zod-Schema beschreibt die erlaubten Werte und Validierungsregeln für ein Objekt.
+Fehlermeldungen werden direkt im Schema hinterlegt.
+
+.Schema und Typ (src/domain/Customer.ts)
+[source,ts]
+----
+include::../basisprojekt-client/src/domain/Customer.ts[]
+----
+
+== Typ ableiten
+
+`z.infer<typeof schema>` leitet den TypeScript-Typ automatisch aus dem Schema ab.
+Dadurch muss kein separates Interface gepflegt werden – Schema und Typ bleiben immer konsistent.
+
+[source,ts]
+----
+export type Customer = z.infer<typeof customerSchema>;
+----
+
+== Integration mit TanStack Form
+
+Das Schema wird als `onChange`-Validator an `useForm` übergeben.
+TanStack Form ruft das Schema bei jeder Änderung auf und stellt Fehler über `field.state.meta.errors` bereit.
+
+[source,tsx]
+----
+const form = useForm({
+  validators: {
+    onChange: customerSchema,
+  },
+});
+----
+
+Fehler sind Objekte mit einer `.message`-Eigenschaft – kein einfacher String:
+
+[source,tsx]
+----
+{field.state.meta.errors.map((e) => (typeof e === 'string' ? e : e.message)).join(', ')}
+----
