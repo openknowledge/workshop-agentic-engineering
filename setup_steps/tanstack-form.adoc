@@ -1,0 +1,92 @@
+= TanStack Form Setup
+
+== Warum TanStack Form?
+
+**TanStack Form** ist eine headless Formular-Bibliothek für React.
+Im Vergleich zu Lösungen wie React Hook Form bietet sie vollständige TypeScript-Integration mit typsicharerValidierung über Standard-Schema-kompatible Bibliotheken wie **Zod** –
+ohne eigene UI-Komponenten vorzuschreiben.
+
+== Installation
+
+[source,bash]
+----
+npm install @tanstack/react-form zod
+----
+
+=== Package.json
+
+[source,json]
+----
+include::../basisprojekt-client/package.json[lines=16]
+----
+
+[source,json]
+----
+include::../basisprojekt-client/package.json[lines=22]
+----
+
+== Ordnerstruktur
+
+Formulare liegen unter `src/features/<feature>/components/`, Zod-Schemata und zugehörige Typen unter `src/domain/` (oder `src/features/<feature>/schemas/`).
+Die gemeinsame `FormField`-Komponente liegt unter `src/components/`:
+
+[source]
+----
+src/
+  components/
+    FormField.tsx                           # Wiederverwendbare Formularfeld-Komponente
+  domain/
+    Customer.ts                             # Zod-Schema + abgeleiteter TypeScript-Typ
+  features/
+    customers/
+      components/
+        CustomerForm.tsx                    # Formularkomponente mit TanStack Form
+----
+
+== Zod-Schema definieren
+
+Das Zod-Schema dient gleichzeitig als Validierungsregel und als Quelle des TypeScript-Typs.
+`z.infer` leitet den Typ automatisch aus dem Schema ab, sodass kein zweites Interface gepflegt werden muss.
+
+.Schema und Typ (src/domain/Customer.ts)
+[source,ts]
+----
+include::../basisprojekt-client/src/domain/Customer.ts[]
+----
+
+== Wiederverwendbare FormField-Komponente
+
+`FormField` kapselt Label, Input und Fehleranzeige für ein einzelnes Formularfeld.
+Sie erhält das `field`-Objekt von TanStack Form und rendert Fehler als lesbaren Text –
+TanStack Form liefert Fehlerobjekte, daher wird `.message` explizit extrahiert.
+
+.Gemeinsame Komponente (src/components/FormField.tsx)
+[source,tsx]
+----
+include::../basisprojekt-client/src/components/FormField.tsx[]
+----
+
+== Formular erstellen
+
+`useForm` initialisiert das Formular mit Standardwerten und dem Zod-Schema als `onChange`-Validator.
+`form.Field` rendert ein einzelnes Feld; die `FormField`-Komponente übernimmt Label, Input und Fehleranzeige.
+`form.Subscribe` liest reaktiv `canSubmit` und `isSubmitting` aus dem Formular-State, ohne die gesamte Komponente neu zu rendern.
+
+[%collapsible, title="src/features/customers/components/CustomerForm.tsx"]
+====
+[source,tsx]
+----
+include::../basisprojekt-client/src/features/customers/components/CustomerForm.tsx[]
+----
+====
+
+== Verwendung in der Route
+
+Die Formularkomponente erhält `defaultValues` aus den geladenen Daten sowie `onSubmit`, `isPending` und `submitLabel` als Props.
+Damit bleibt sie unabhängig davon, ob ein Datensatz erstellt oder bearbeitet wird.
+
+.Kunde bearbeiten (src/routes/customers/editCustomer.tsx)
+[source,tsx]
+----
+include::../basisprojekt-client/src/routes/customers/editCustomer.tsx[]
+----

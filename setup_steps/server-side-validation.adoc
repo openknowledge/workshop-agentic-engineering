@@ -1,0 +1,173 @@
+= Serverseitige Validierung
+
+Die serverseitige Validierung erfüllt zwei Ziele.
+Erstens wollen wir bei Benutzereingaben sicherstellen, dass sie valide sind.
+Valide beinhaltet dabei nicht nur die fachliche Korrektheit,
+sondern auch die Einhaltung technischer Grenzen wie die Größen von Datenbankspalten.
+Für den Nutzerkomfort wollen wir diese Fehler
+außerdem sprechend an den Client kommunizieren.
+Wichtig ist, dass die Validierung von Nutzereingaben
+nicht nur dem Komfort des Benutzers dient, sondern auch ein Sicherheitsfeature ist.
+Überläufe und Injections können so verhindert werden.
+
+Das zweite Ziel ist die möglichst frühe Erkennung von Programmierfehlern.
+Um langfristig robuste und wartbare Systeme zu entwickeln, ist es essenziell,
+dass Programmier- und Modellierungsfehler zum frühestmöglichen Zeitpunkt erkannt werden.
+Dazu soll das Domänenmodell nur valide Objekte enthalten.
+Das betrifft insbesondere Null-Checks auf allen erforderlichen Werten,
+Prüfung von Wertebereichen (Ranges), z. B. Mindest- und Höchstwerte,
+und die Einhaltung technischer Grenzen wie der Länge von Datenbankspalten.
+
+Beide Ziele werden mit demselben Mittel erreicht:
+Die Validierungsregeln werden ausschließlich deklarativ über Bean Validation an den Records definiert
+und immer *nach* der Erzeugung eines Objekts ausgewertet.
+Das System verhält sich dadurch stabiler,
+konsistenter und sicherer – sowohl in der Entwicklung als auch im Betrieb.
+
+== Validierung von Nutzereingaben
+
+Die Validierung der Nutzereingaben erfolgt über Bean Validation.
+Damit diese greift, muss der Controller mit `@Validated` und die Parameter mit `@Valid` annotiert werden.
+Dann können die API-Objekte mit Bean-Validation-Annotations versehen,
+die dann automatisch ausgewertet werden.
+
+[%collapsible, title="CustomerController.java"]
+====
+[source,java]
+----
+include::../basisprojekt-server/src/main/java/de/openknowledge/baseproject/customer/web/CustomerController.java[tags=body-validation]
+----
+====
+Neben dem Body können auch alle anderen Request-Parameter (wie z.B. Path-Variablen) validiert werden.
+Auch Path-Variablen sind dabei Value Objects (hier `CustomerId`) und keine einfachen Typen wie `Long`,
+damit ihre Constraints direkt am Typ definiert sind.
+Für die Konvertierung des Strings aus der URL besitzt das Value Object einen zusätzlichen Konstruktor
+mit einem `String`-Parameter, den Spring automatisch verwendet.
+Ein eigener `Converter` ist deshalb nicht nötig.
+Dieser Konstruktor konvertiert nur, die Validierung erfolgt anschließend über `@Valid`:
+
+[%collapsible, title="CustomerController.java"]
+====
+[source,java]
+----
+include::../basisprojekt-server/src/main/java/de/openknowledge/baseproject/customer/web/CustomerController.java[tags=path-validation]
+----
+====
+
+Standardmäßig wird in Spring
+weder die entstehende `ConstraintViolationException` noch die entstehende `MethodArgumentNotValidException`
+so verarbeitet, dass eine sinnvolle Fehlermeldung zum Client zurückgeliefert wird.
+
+Um das zu erreichen, fügen wir dem Projekt einen ValidationExceptionHandler hinzu:
+link:../basisprojekt-server/src/main/java/de/openknowledge/baseproject/infrastructure/http/ValidationExceptionHandler.java[ValidationExceptionHandler.java]
+
+Standardmäßig werden die Fehlermeldungen dabei in der Systemsprache des Java-Prozesses ausgegeben.
+Um die Fehlermeldungen in der Sprache des Clients (über den Accept-Language-Header) zurückzugeben,
+kann in Spring folgende Einträge in die `application.properties` erfolgen.
+
+[source,java]
+----
+include::../basisprojekt-server/src/main/resources/application.properties[locale-resolver]
+----
+
+Allerdings wird damit immer noch die Systemsprache verwendet,
+falls keine Übersetzung für die Sprache aus dem Accept-Language-Header existiert.
+Um sicherzustellen, dass stattdessen die Default-Sprache von Spring MVC verwendet wird,
+müssen wir das Default-Locale des LocaleResolvers entsprechend setzen.
+Das kann über eine link:../basisprojekt-server/src/main/java/de/openknowledge/baseproject/infrastructure/http/LocaleConfig.java[LocaleConfig.java] geschehen.
+
+Der Bean Validation Standard hat einen entscheidenden Nachteil.
+Er ist im Default-Modus so konfiguriert, dass er bestehende Objektbäume validiert.
+Das steht im Konflikt zu unserem Ansatz, nur valide Objektbäume zu erzeugen.
+
+== Konsistentes Domänenmodell
+
+Wir modellieren Value Objects als Java Records. Diese sind standardmäßig immutable.
+Die Regeln, wann ein Wert valide ist, werden als Bean-Validation-Annotations direkt an den Record-Komponenten definiert:
+
+[%collapsible, title="LastName.java"]
+====
+[source,java]
+----
+include::../basisprojekt-server/src/main/java/de/openknowledge/baseproject/customer/domain/LastName.java[tags=validation]
+----
+====
+
+Zusammengesetzte Records (z.B. `Customer`) bestehen nur aus anderen Records.
+Jeder dieser Records validiert sich selbst.
+Damit Bean Validation in die verschachtelten Records hineinwirkt,
+müssen die Komponenten mit `@Valid` annotiert werden.
+
+=== Kein Validieren im Konstruktor
+
+Der (kanonische) Konstruktor eines Records enthält *keine* Validierung.
+Der Grund ist, dass Records von Jackson (JSON), Hibernate (JPA) und Spring (Request-Parameter)
+über den Konstruktor erzeugt werden und die Validierung bei diesen Wegen immer nachträglich
+per Bean Validation erfolgt (z.B. durch `@Valid` am Controller-Parameter).
+Eine Validierung im Konstruktor würde dort die gesammelten, strukturierten Fehlermeldungen verhindern,
+weil schon der erste Fehler beim Erzeugen als Exception auftritt.
+
+Im Konstruktor ist lediglich eine *Normalisierung* erlaubt,
+z.B. das Entfernen von Leerzeichen mit `trim()`:
+
+[source,java]
+----
+public record LastName(@JsonValue @NotBlank @Size(max = MAX_LENGTH) String lastName) {
+
+    public LastName {
+        lastName = lastName != null ? lastName.trim() : null;
+    }
+}
+----
+
+Weil die Validierung erst nach dem Konstruktor stattfindet,
+muss man im Konstruktor immer damit rechnen,
+dass die Parameter invalide sind, z.B. `null`.
+Der Konstruktor muss deshalb null-sicher sein und darf nicht selbst an ungültigen Werten scheitern.
+
+=== Factory-Methoden für Code-erzeugte Objekte
+
+Objekte, die im Code (und nicht durch das Framework) erzeugt werden,
+werden über eine statische Factory-Methode `new<RecordName>` erzeugt.
+Diese ruft den Konstruktor auf und validiert das Ergebnis sofort programmatisch über `Validate.validate(...)`.
+Bei Fehlern wird eine `IllegalArgumentException` geworfen,
+deren Stacktrace auf die Stelle verweist, die das ungültige Objekt erzeugen wollte:
+
+[source,java]
+----
+public static CustomerId newCustomerId(Long customerId) {
+    return validate(new CustomerId(customerId));
+}
+----
+
+Den kanonischen Konstruktor ruft deshalb außer der Factory-Methode niemand direkt auf.
+Die einzige Ausnahme sind Konvertierungs-Konstruktoren mit einem `String`-Parameter (siehe oben),
+die vom Framework verwendet werden und deren Ergebnis danach per `@Valid` validiert wird.
+
+=== Absicherung durch Architekturtests
+
+Diese Regeln werden im `ValueObjectTest` (ArchUnit) automatisch geprüft:
+
+* Controller sind mit `@Validated` annotiert, ihre Record-Parameter mit `@Valid`,
+  und sie verwenden keine einfachen Typen als Parameter.
+* Record-Komponenten, die selbst Records sind, sind mit `@Valid` annotiert.
+* Records mit einer einzelnen Komponente haben eine Bean-Validation-Constraint (außer bei `boolean`).
+* Zusammengesetzte Records bestehen nur aus anderen Records.
+* Der kanonische Konstruktor ist null-sicher.
+* Der kanonische Konstruktor wird nur von der Factory-Methode `new<RecordName>` (oder einem `String`-Konstruktor) aufgerufen.
+* Die Factory-Methode gibt genau das Objekt zurück, das sie validiert hat.
+
+=== Entitäten
+
+In Entitäten und Aggregates muss sichergestellt werden,
+dass auch in den Update-Methoden keine fehlenden Werte gesetzt werden.
+Die übergebenen Records sind dabei bereits validiert,
+da sie entweder über die Factory-Methode oder durch `@Valid` am Controller entstanden sind.
+
+[%collapsible, title="CustomerEntity.java"]
+====
+[source,java]
+----
+include::../basisprojekt-server/src/main/java/de/openknowledge/baseproject/customer/domain/CustomerEntity.java[tags=validation]
+----
+====

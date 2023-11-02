@@ -1,0 +1,151 @@
+= Git-Workflow-Leitfaden
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: highlight.js
+
+== Branch-Struktur
+
+[cols="1,2", options="header"]
+|===
+| Branch | Zweck
+
+| `main`
+| Produktionsreifer Code
+
+| `develop`
+| Branch für Entwicklung
+
+| `feature/*`
+| Arbeitsbranches
+|===
+
+== Branch-Benennung
+
+Für jedes Ticket wird ein eigener Branch erstellt, nach folgendem Schema:
+
+[source]
+----
+<typ>/<ticket-id>-<kurzbeschreibung>
+----
+
+.Beispiele:
+* `feature/PROJ-123-benutzer-authentifizierung`
+* `bugfix/PROJ-456-login-weiterleitung-korrigieren`
+* `hotfix/PROJ-789-kritischer-sicherheitspatch`
+
+== Workflow
+
+=== 1. Neues Ticket
+
+[source,bash]
+----
+# Immer von einem aktuellen develop-Branch starten
+git checkout develop
+git pull origin develop
+
+# Feature-Branch erstellen
+git checkout -b feature/PROJ-123-neues-feature
+----
+
+=== 2. Während der Entwicklung
+
+Früh und oft committen mit aussagekräftigen Nachrichten:
+
+[source,bash]
+----
+git add .
+git commit -m "Add validation logic"
+----
+
+=== Format für Commit-Nachrichten
+
+[WARNING]
+====
+Wir verwenden die Git's Imperative Mood Konvention
+====
+"If applied, this commit will..."
+[source]
+----
+[PROJ-123] Add user authentication
+----
+
+=== 3. Vor dem Erstellen eines Merge Requests
+
+IMPORTANT: *Immer rebasen und squashen vor dem Merge Request!*
+
+[source,bash]
+----
+# Neueste Änderungen holen
+git fetch origin
+
+# Auf develop rebasen und Commits interaktiv squashen
+git rebase -i origin/develop
+----
+
+Im Rebase-Editor (oder IDEA) die Commits zu logischen Einheiten zusammenfassen:
+
+[source]
+----
+pick   abc1234 Add user authentication
+squash def5678 Fix typo
+squash ghi9012 Update UI
+----
+
+Nach dem Squashen eine klare, umfassende Commit-Nachricht verfassen.
+
+=== 4. Pushen und Merge Request erstellen
+
+[source,bash]
+----
+# Force-Push nach Rebase (nur auf dem eigenen Feature-Branch)
+git push origin feature/PROJ-123-neues-feature --force-with-lease
+----
+
+Merge Request mit Ziel `develop` erstellen.
+
+=== 5. Nach MR-Freigabe
+
+Der MR wird in `develop` gemergt. Feature-Branch löschen:
+
+[source,bash]
+----
+git checkout develop
+git pull origin develop
+git branch -d feature/PROJ-123-neues-feature
+----
+
+== Release-Prozess
+
+Wenn `develop` bereit für Produktion ist:
+
+[source,bash]
+----
+git checkout main
+git pull origin main
+git merge develop
+git push origin main
+git tag -a v1.0.0 -m "Release Version 1.0.0"
+git push origin v1.0.0
+----
+
+== Hotfixes
+
+Für kritische Produktionsprobleme:
+
+[source,bash]
+----
+git checkout main
+git pull origin main
+git checkout -b hotfix/PROJ-999-kritischer-fix
+
+# Nach Abschluss des Fixes in main UND develop mergen
+----
+
+== Regeln im Überblick
+
+. *Ein Branch pro Ticket*
+. *Immer* rebase + squash vor dem MR
+. `--force-with-lease` statt `--force` verwenden
+. Branches nach dem Merge löschen
+. Commits atomar und gut beschrieben halten

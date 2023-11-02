@@ -1,0 +1,70 @@
+= Database Setup
+
+== Nutzung von Flyway
+Um unterschiedliche Applikationsstände (mit den zugehörigen Datenbank-Ständen)
+auf verschiedenen Stages (z.B. Development, Test, Integration, Production)
+deployen zu können, verwenden wir Flyway zur Datenbank-Migration.
+
+Flyway-Skripte werden in `src/main/resources/db/migration` abgelegt.
+Dort werden sie von Flyway automatisch gefunden.
+Der Name eines Flyway-Skripts startet immer mit einem großen `V`
+gefolgt von der Versionsnummer.
+Nach der Versionsnummer folgen zwei Unterstriche.
+Dahinter kann dem Skript ein sprechender Name gegeben werden,
+wobei Wörter mit Bindestrichen getrennt werden sollten.
+
+:create-counter-sql: ../basisprojekt-server/src/main/resources/db/migration/V1.0.0__create-counter.sql
+
+Ein Beispiel kann hier gefunden werden: link:{create-counter-sql}[V1.0.0__create-counter.sql]
+
+Flyway wird sowohl für das automatisierte
+als auch für das manuelle lokale Testen verwendet,
+damit Datenbank-Constraints usw. direkt mit getestet werden.
+Auch die Syntax der Flyway-Skripte wird so implizit mit getestet.
+
+== Testdaten in SQL-Skripten
+Testdaten, die sowohl für die automatisierten Tests als auch für das manuelle lokale Testen verwendet werden können, werden in `src/test/resources/db` abgelegt.
+
+== Datenbank-Setup für lokales Testen
+Um die Datenbank verwenden zu können, wenn wir die Applikation lokal starten,
+konfigurieren wir sie im docker-compose File.
+Dort verwenden wir Flyway, um zunächst das Datenbank-Schema aufzubauen,
+aber auch, um die Testdaten einzufügen:
+
+[source]
+----
+include::../docker-compose.yaml[tags=database]
+----
+====
+
+[%collapsible, title="docker-compose.yaml - Database & Flyway"]
+====
+
+Um die Datenbank für einen lokal laufenden Spring-Boot-Server zu starten,
+führen wir folgenden Befehl aus:
+
+[source]
+----
+docker compose up flyway
+----
+
+Dieser startet die Datenbank und führt die Flyway-Migration aus.
+
+Damit ein lokal laufender Spring-Boot-Server sich gegen diese Datenbank verbindet,
+legen wir eine link:../basisprojekt-server/src/main/resources/application-local.properties[application-local.properties] in `src/main/resources` an,
+in der die Verbindungsdaten für die lokale Datenbank hinterlegt sind.
+
+Damit diese auch verwendet werden, wenn wir Spring aus der IDE starten,
+wenden wir einen kleinen Trick an.
+Wir legen die Datei link:../basisprojekt-server/spring.profiles.active.local.properties[spring.profiles.active.local.properties]
+im Root-Ordner des Server-Projektes an.
+Auf diese Weise ist die Datei nicht Teil des Deployments, wird aber gefunden,
+wenn Spring lokal gestartet wird.
+
+Das können wir uns mit folgendem Eintrag in der `application.properties` zu Nutze machen,
+um lokal das Profil `local` zu aktivieren:
+
+[source]
+----
+include::../basisprojekt-server/src/main/resources/application.properties[tags=profile-config]
+----

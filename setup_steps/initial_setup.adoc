@@ -1,0 +1,66 @@
+== Vorbedingungen
+
+- leeres Git Repository namens `projektname`
+- JAVA 21
+- node 24
+- docker
+
+=== Backend Projekt erstellen
+
+Erstelle ein Spring Boot Backend Projekt über den Spring Boot Initializr: https://start.spring.io/ mit folgenden Optionen:
+
+- Project: Maven
+- Language: Java
+- Spring Boot: neuste version (keine snapshot version)
+
+==== Project Metadata:
+- Group: frei wählbar (beim Kunden erfragen, sonst Kundendomain rückwärts)
+- Artifact: >projectname
+- Name: >projektname<-server
+- Description: frei wählbar
+- Package Name: >group<.>artifact< (beim Kunden erfragen, sonst Kundendomain rückwärts)
+- Packaging: Jar
+- Java: 21
+
+==== Dependencies:
+- Spring Web
+- Validation
+- Spring Data JPA (not used)
+- PostgreSQL Driver (not used)
+- Spring Dev Tools
+
+
+=> Generieren und Zip herunterladen
+
+- Zip entpacken nach `projektname/projektname-server`
+- Füge folgende Zeile zu der Property Datei (`src/main/resources/application.properties`) hinzu, um Spring Boot daran zu hindern sich zur Datenbank zu connecten:
+
+`spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration`
+
+=== Frontend Projekt erstellen
+
+Wir möchten ein react project mit vite als Build Tool und typescript als Programmiersprache erstellen:
+
+[source]
+----
+npm create vite@latest projektname-client -- --template react-ts
+----
+
+- Use rolldown-vite (Experimental)?: No
+- Install with npm and start now? Yes
+
+=== Applikationen starten
+
+==== Backend
+
+[source]
+----
+projectname-server $ ./mvnw spring-boot:run
+----
+
+==== Frontend
+
+[source]
+----
+projectname-client $ npm run dev
+----

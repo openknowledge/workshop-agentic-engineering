@@ -1,0 +1,74 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "ignorePresets": ["group:monorepos", "group:recommended"],
+  "schedule": ["at any time"],
+  "labels": ["renovate"],
+  "enabledManagers": ["maven", "npm", "dockerfile", "docker-compose", "custom.regex"],
+
+  "npm": {
+    "rangeStrategy": "bump"
+  },
+
+  "packageRules": [
+    {
+      "description": "Group all dependency updates into a single MR",
+      "matchPackageNames": ["*"],
+      "groupName": "all dependencies",
+      "groupSlug": "all"
+    }
+  ],
+
+  "customManagers": [
+    {
+      "description": "Track Node.js version pinned in frontend-maven-plugin (basisprojekt-client/pom.xml)",
+      "customType": "regex",
+      "managerFilePatterns": ["basisprojekt-client/pom\\.xml"],
+      "matchStrings": [
+        "<frontend\\.nodeVersion>(?<currentValue>v[\\d.]+)</frontend\\.nodeVersion>"
+      ],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node-version",
+      "versioningTemplate": "node"
+    },
+    {
+      "description": "Track Node.js version in .nvmrc",
+      "customType": "regex",
+      "managerFilePatterns": ["**/.nvmrc"],
+      "matchStrings": ["^(?<currentValue>v?[\\d.]+)"],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node-version",
+      "versioningTemplate": "node"
+    },
+    {
+      "description": "Track OpenTelemetry Java agent version downloaded via curl in Dockerfile",
+      "customType": "regex",
+      "managerFilePatterns": ["Dockerfile"],
+      "matchStrings": [
+        "opentelemetry-java-instrumentation/releases/download/v(?<currentValue>[\\d.]+)/opentelemetry-javaagent\\.jar"
+      ],
+      "depNameTemplate": "open-telemetry/opentelemetry-java-instrumentation",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "description": "Track Docker CLI static binary version downloaded in .gitlab-ci.yml before_script",
+      "customType": "regex",
+      "managerFilePatterns": ["\\.gitlab-ci\\.yml"],
+      "matchStrings": ["docker-(?<currentValue>[\\d.]+)\\.tgz"],
+      "depNameTemplate": "moby/moby",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "description": "Track Docker Compose plugin version downloaded in .gitlab-ci.yml before_script",
+      "customType": "regex",
+      "managerFilePatterns": ["\\.gitlab-ci\\.yml"],
+      "matchStrings": [
+        "docker/compose/releases/download/v(?<currentValue>[\\d.]+)/docker-compose-linux"
+      ],
+      "depNameTemplate": "docker/compose",
+      "datasourceTemplate": "github-releases"
+    }
+  ]
+}

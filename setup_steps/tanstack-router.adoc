@@ -1,0 +1,108 @@
+= TanStack Router Setup
+
+== Warum TanStack Router?
+
+**TanStack Router** ist ein typsicherer Client-Side-Router für React.
+Im Vergleich zu React Router bietet er vollständige TypeScript-Integration mit automatischer Typinferenz für Routen, Parameter und Suchanfragen,
+sodass Fehler schon zur Kompilierzeit erkannt werden.
+
+== Installation
+
+[source,bash]
+----
+npm install @tanstack/react-router
+----
+
+=== Package.json
+
+[source,json]
+----
+include::../basisprojekt-client/package.json[lines=16]
+----
+
+== Ordnerstruktur
+
+Die Routen werden unter `src/routes/` abgelegt.
+Jede Datei definiert eine Route mit `createRoute` oder `createRootRoute`.
+
+[source]
+----
+src/
+  routes/
+    root.tsx              # Root-Layout-Route
+    index.tsx             # Redirect von / nach /customers
+    customers/
+      index.tsx           # Kundenliste  (/customers)
+      editCustomer.tsx    # Kundendetail (/customers/$customerId)
+----
+
+== Root-Route
+
+Die Root-Route (`createRootRoute`) definiert das globale Layout.
+`<Outlet />` rendert die jeweils aktive Child-Route.
+
+[%collapsible, title="src/routes/root.tsx"]
+====
+[source,tsx]
+----
+include::../basisprojekt-client/src/routes/root.tsx[]
+----
+====
+
+== Child-Routen
+
+Child-Routen werden mit `createRoute` angelegt.
+`getParentRoute` verknüpft die Route mit ihrer Elternroute und stellt die Typsicherheit sicher.
+
+[%collapsible, title="src/routes/index.tsx"]
+====
+[source,tsx]
+----
+include::../basisprojekt-client/src/routes/index.tsx[]
+----
+====
+
+=== Routen mit Parametern
+
+Dynamische Segmente werden mit `$paramName` in `path` definiert.
+Auf den Parameterwert wird über `route.useParams()` zugegriffen.
+
+[%collapsible, title="src/routes/customers/editCustomer.tsx"]
+====
+[source,tsx]
+----
+include::../basisprojekt-client/src/routes/customers/editCustomer.tsx[]
+----
+====
+
+== Routenbaum und Router
+
+In `main.tsx` werden alle Routen zu einem Baum zusammengesetzt und der Router instanziiert.
+Das `declare module` sorgt dafür, dass `useNavigate`, `Link` u. a. den konkreten Router kennen
+und typsichere Pfade anbieten.
+
+[%collapsible, title="src/main.tsx"]
+====
+[source,tsx]
+----
+include::../basisprojekt-client/src/main.tsx[]
+----
+====
+
+== Navigation
+
+`<Link>` rendert einen typsicheren Anker.
+Mit `useNavigate` kann programmatisch navigiert werden.
+
+.Deklarativ (src/routes/customers/index.tsx)
+[source,tsx]
+----
+include::../basisprojekt-client/src/routes/customers/index.tsx[tags=link-navigation]
+----
+
+.Programmatisch (src/routes/customers/editCustomer.tsx)
+[source,tsx]
+----
+include::../basisprojekt-client/src/routes/customers/editCustomer.tsx[tags=navigate-usage]
+include::../basisprojekt-client/src/routes/customers/editCustomer.tsx[tags=navigate-call]
+----
