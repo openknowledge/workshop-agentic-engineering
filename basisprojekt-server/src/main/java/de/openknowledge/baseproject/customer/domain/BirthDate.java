@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.openknowledge.baseproject.counter.domain;
+package de.openknowledge.baseproject.customer.domain;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
+import java.time.LocalDate;
 
 @Embeddable
-public record CounterName(@JsonValue String name) {}
+public record BirthDate(@JsonValue LocalDate birthDate) {}

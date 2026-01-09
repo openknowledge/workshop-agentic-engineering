@@ -1,1 +1,5 @@
-UPDATE tab_counter SET c_value = 42 WHERE c_name = 'example';
+INSERT INTO tab_customer (c_id, c_first_name, c_last_name, c_email, c_phone_number, c_birth_date)
+VALUES (nextval('SEQ_CUSTOMER_C_ID'), 'Max', 'Mustermann', 'max.mustermann@example.com', '+49 123 4567890', '1990-05-15');
+
+INSERT INTO tab_customer (c_id, c_first_name, c_last_name, c_email, c_phone_number, c_birth_date)
+VALUES (nextval('SEQ_CUSTOMER_C_ID'), 'Erika', 'Musterfrau', 'erika.musterfrau@example.com', '+49 987 6543210', '1985-11-23');

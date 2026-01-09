@@ -46,8 +46,8 @@ docker-compose:
     - echo "$RESPONSE" | grep -q "Basisprojekt" || (echo "❌ index.html not found!"; exit 1)
     - echo "✅ Start Page found";
     - echo "Testing REST Call..."
-    - RESPONSE=$(curl -sf http://docker:8080/api/counters/example)
-    - echo "$RESPONSE" | grep -q "42" || (echo "❌ Counter not found!"; exit 1)
-    - echo "✅ Counter found."
+    - RESPONSE=$(curl -sf http://docker:8080/api/customers)
+    - echo "$RESPONSE" | grep -q "firstName" || (echo "❌ Customers API not found!"; exit 1)
+    - echo "✅ Customers API found."
   after_script:
     - docker compose down

@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.openknowledge.baseproject.counter.domain;
+package de.openknowledge.baseproject.customer.domain;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.NotBlank;
 
 @Embeddable
-public record CounterValue(@JsonValue int value) {}
+public record FirstName(@JsonValue @NotBlank String firstName) {}
