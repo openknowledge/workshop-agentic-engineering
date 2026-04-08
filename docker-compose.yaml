@@ -31,7 +31,25 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://basisprojekt-database:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: geheim
+      OTEL_SERVICE_NAME: basisprojekt-server
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
     depends_on:
+      basisprojekt-database:
+        condition: service_started
+      otel-collector:
+        condition: service_started
       flyway:
         condition: service_completed_successfully
 # end::database-configuration[]
+
+# OpenTelemetry Collector (inline config mounted from repo)
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.150.1
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    environment:
+      OTLP_ENVIRONMENT: local
+    volumes:
+      - ./deployment/configs/opentelemetry-collector-config-local.yaml:/etc/otel-collector-config.yaml:ro
+    # no depends_on: allow collector to start independently; server depends_on the collector
+

@@ -1,6 +1,10 @@
+# tag::ci-stages[]
 stages:
   - build
   - integration-test
+  - publish
+  - deploy
+# end::ci-stages[]
 
 default:
   tags:
@@ -67,3 +71,76 @@ maven-build:
       - basisprojekt-server/target/
     expire_in: 1 week
 # end::maven-build[]
+
+
+build-docker-image:
+  image: docker:24.0.5
+  stage: publish
+  variables:
+    BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHA
+  services:
+    - docker:24.0.5-dind
+  script:
+    - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - docker build -t $BACKEND_IMAGE -f Dockerfile .
+    - docker push $BACKEND_IMAGE
+
+# tag::release-rules[]
+.release_rules:
+  rules:
+    # Do not run on merge requests
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    # Only run this deployment job on the development branch
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
+      when: always
+      variables:
+        DOCKER_TAG: dev
+        COMPOSE_ID: $DOKPLOY_DEV_COMPOSE_ID
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+      when: always
+      variables:
+        DOCKER_TAG: latest
+        COMPOSE_ID: $DOKPLOY_PRODUCTION_COMPOSE_ID
+    # Do not run for other branches
+    - when: never
+# end::release-rules[]
+
+release:
+  extends:
+    - .release_rules
+  image: docker:29.4.0
+  stage: deploy
+  variables:
+    BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHA
+    BACKEND_TAG_IMAGE: $CI_REGISTRY_IMAGE/backend:$DOCKER_TAG
+  services:
+    - docker:24.0.5-dind
+  script:
+    - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - docker pull $BACKEND_IMAGE
+    - docker tag $BACKEND_IMAGE $BACKEND_TAG_IMAGE
+    - docker push $BACKEND_TAG_IMAGE
+
+deploy:
+  extends:
+    - .release_rules
+  needs:
+    - release
+  when: on_success
+  image: curlimages/curl:8.19.0
+  stage: deploy
+  variables:
+    API_KEY: $DOKPLOY_DEPLOYMENT_KEY
+    COMPOSE_ID: $COMPOSE_ID
+    DOCKER_TAG: $DOCKER_TAG
+  script:
+    - echo "Deploying ${DOCKER_TAG} on compose with ID ${COMPOSE_ID}..."
+    - echo
+    - |
+      curl -X 'POST' \
+      'https://dokploy.apps.openknowledge.services/api/compose.deploy' \
+      -H 'accept: application/json' \
+      -H 'Content-Type: application/json' \
+      -H "x-api-key: ${API_KEY}" \
+      -d "{ \"composeId\": \"${COMPOSE_ID}\" }"

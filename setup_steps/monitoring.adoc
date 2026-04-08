@@ -1,0 +1,85 @@
+= Monitoring
+
+Die Applikation ist mit OpenTelemetry instrumentiert für Tracing, Metrics und Logs. Dies ermöglicht es, die Applikation in Production zu überwachen und Probleme schnell zu identifizieren.
+
+== OpenTelemetry Architecture
+
+Das Monitoring ist so aufgebaut:
+
+1. **OpenTelemetry Java Agent**: Der Agent lädt automatisch bei jedem Java-Start und instrumentiert die Spring Boot Applikation (siehe `Dockerfile`)
+2. **OpenTelemetry Collector**: Empfängt Telemetrie-Daten (Traces, Metrics, Logs) vom Java Agent und leitet sie weiter
+3. **Monitoring Backend**: Die gesammelten Daten werden an ein zentrales Monitoring-System gesendet
+
+== Configure Docker Image
+
+Der OpenTelemetry Java Agent ist im Docker Image integriert:
+
+**Download des OpenTelemetry Java Agent (v1.25.0):**
+
+[source]
+.Source: /Dockerfile
+----
+include::../Dockerfile[tags=download-otel-agent]
+----
+
+**Integration in den Runtime Container:**
+
+Der Agent wird beim Starten der JVM geladen via JVM `-javaagent` Flag:
+
+[source]
+.Source: /Dockerfile
+----
+include::../Dockerfile[tags=runtime]
+----
+
+== OpenTelemetry Collector Configuration
+
+Der OpenTelemetry Collector empfängt Telemetrie-Daten vom Java Agent und exportiert sie an das Monitoring-Backend.
+
+**Collector Services:**
+
+- `otlp` Receiver: Empfängt Daten auf Port 4317 (gRPC) vom Java Agent
+- `resourcedetection` Processor: Ergänzt Host und Service-Informationen
+- `batch` Processor: Bündelt Daten für effizientere Übertragung
+- `otlp_http` Exporter: Sendet Daten an `https://http-otlp.monitoring.openknowledge.services`
+- `debug` Exporter: Gibt Telemetrie-Daten in den Logs aus (nützlich für lokales Debugging)
+
+**Konfigurationsdatei:**
+
+[source]
+.Source: /deployment/configs/opentelemetry-collector-config.yaml
+----
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+...
+exporters:
+  otlp_http:
+    endpoint: https://http-otlp.monitoring.openknowledge.services
+----
+
+== OTEL Environment Variables
+
+Die folgenden Umgebungsvariablen steuern die OpenTelemetry Integration:
+
+- `OTEL_SERVICE_NAME`: Der Name des Services in Monitoring (z.B. `basisprojekt-server`)
+- `OTEL_EXPORTER_OTLP_ENDPOINT`: Der Endpoint des OpenTelemetry Collectors (z.B. `http://otel-collector:4317` für lokales Docker Compose)
+- `OTEL_SDK_DISABLED`: Kann auf `true` gesetzt werden, um OpenTelemetry komplett zu deaktivieren
+
+Diese Variablen sind in `docker-compose.yaml` für lokale Entwicklung und in `deployment/docker-compose.yaml` für Production konfiguriert.
+
+== Local Development
+
+Für die lokale Entwicklung mit Docker Compose sind die OTEL Services standardmäßig aktiviert. Der Collector wird mit dem `debug` Exporter konfiguriert, sodass alle Telemetrie-Daten in den Logs sichtbar sind.
+
+Falls gewünscht kann OpenTelemetry deaktiviert werden, indem man folgende Umgebungsvariable setzt:
+
+[source,bash]
+----
+OTEL_SDK_DISABLED=true
+----
+
+Dies kann z.B. in einer lokalen `.env` Datei für `docker-compose up` gesetzt werden, um Performance Overhead zu reduzieren.
+
