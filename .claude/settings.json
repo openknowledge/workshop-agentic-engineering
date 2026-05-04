@@ -1,0 +1,64 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-check.sh\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint-check.sh\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/spotless-format.sh\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(mvn *)",
+      "Bash(npm run *)",
+      "Bash(npx prettier *)",
+      "Bash(npx eslint *)",
+      "Bash(docker-compose *)",
+      "Bash(docker compose *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git fetch *)",
+      "Bash(git stash *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(wc *)",
+      "Edit(**/basisprojekt-server/src/**)",
+      "Edit(**/basisprojekt-client/src/**)",
+      "Edit(**/basisprojekt-server/pom.xml)",
+      "Edit(**/basisprojekt-client/package.json)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)",
+      "Bash(git rebase *)",
+      "Edit(**/.env*)",
+      "Edit(**/secrets*)",
+      "Edit(**/application-local.properties)",
+      "Edit(**/.gitlab-ci.yml)",
+      "Edit(**/src/main/checkstyle/**)"
+    ]
+  }
+}
