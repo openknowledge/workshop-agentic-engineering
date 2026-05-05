@@ -52,6 +52,24 @@ h2 {
   padding: 1rem 2rem;
 }
 
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid #444;
+  margin-bottom: 1.5rem;
+}
+
+.app-header nav a {
+  padding: 0.4em 0.8em;
+  border-radius: 4px;
+}
+
+.app-header nav a:hover {
+  background-color: rgba(100, 108, 255, 0.1);
+}
+
 .page-header {
   display: flex;
   align-items: center;
@@ -94,6 +112,11 @@ h2 {
 
 .btn-primary:hover {
   background-color: #535bf2;
+}
+
+.btn-edit {
+  font-size: 0.85em;
+  padding: 0.3em 0.6em;
 }
 
 /* Table */
@@ -162,8 +185,6 @@ h2 {
 
 .form-actions {
   margin-top: 1.5rem;
-  display: flex;
-  gap: 0.5em;
 }
 
 .error-message {

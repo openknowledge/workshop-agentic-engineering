@@ -12,4 +12,5 @@ Steps:
 . link:./setup_steps/dev_setup.adoc[Lokales Entwicklungs-Setup aufsetzen]
 . link:./setup_steps/database.adoc[Datenbank-Setup vorbereiten]
 . link:./setup_steps/database-test-setup.adoc[Datenbank für das Testen einsetzen]
+. link:./setup_steps/tanstack-router.adoc[TanStack Router einrichten]
 
