@@ -1,27 +1,17 @@
-import { useEffect, useState } from 'react';
 import { createRoute, Link } from '@tanstack/react-router';
-import type { CustomerOverview } from '../../domain/CustomerOverview';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { customersQueryOptions } from '../../features/customers/api/customerQueries';
 import { Route as rootRoute } from '../root';
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/customers',
+  loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(customersQueryOptions),
   component: CustomerListPage,
 });
 
 export function CustomerListPage() {
-  const [customers, setCustomers] = useState<CustomerOverview[] | undefined>();
-
-  useEffect(() => {
-    fetch('/api/customers')
-      .then((res) => res.json())
-      .then(setCustomers)
-      .catch(console.error);
-  }, []);
-
-  if (customers === undefined) {
-    return <p>Laden...</p>;
-  }
+  const { data: customers } = useSuspenseQuery(customersQueryOptions);
 
   return (
     <div>
