@@ -19,6 +19,13 @@ export async function fetchCustomer(id: number): Promise<Customer> {
   return response.json();
 }
 
+export async function deleteCustomer(id: number): Promise<void> {
+  const response = await fetch(`${BASE_URL}/${id}`, { method: 'DELETE' });
+  if (!response.ok) {
+    throw new Error('Kunde konnte nicht gelöscht werden');
+  }
+}
+
 export async function updateCustomer(id: number, data: Customer): Promise<void> {
   const response = await fetch(`${BASE_URL}/${id}`, {
     method: 'PUT',

@@ -14,4 +14,5 @@ Steps:
 . link:./setup_steps/database-test-setup.adoc[Datenbank für das Testen einsetzen]
 . link:./setup_steps/tanstack-router.adoc[TanStack Router einrichten]
 . link:./setup_steps/tanstack-query.adoc[TanStack Query einrichten]
+. link:./setup_steps/tanstack-table.adoc[TanStack Table einrichten]
 

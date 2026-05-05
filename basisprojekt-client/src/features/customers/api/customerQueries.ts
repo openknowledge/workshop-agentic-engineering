@@ -1,5 +1,5 @@
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchCustomers, fetchCustomer, updateCustomer } from './customerApi';
+import { fetchCustomers, fetchCustomer, updateCustomer, deleteCustomer } from './customerApi';
 import type { Customer } from '../../../domain/Customer';
 
 export const customerKeys = {
@@ -17,6 +17,16 @@ export const customerQueryOptions = (id: number) =>
     queryKey: customerKeys.detail(id),
     queryFn: () => fetchCustomer(id),
   });
+
+export function useDeleteCustomer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteCustomer(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: customerKeys.all });
+    },
+  });
+}
 
 export function useUpdateCustomer(id: number) {
   const queryClient = useQueryClient();

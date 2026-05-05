@@ -1,0 +1,81 @@
+= TanStack Table Setup
+
+== Warum TanStack Table?
+
+**TanStack Table** ist eine headless Tabellen-Bibliothek für React.
+Im Vergleich zu fertigen Tabellen-Komponenten überlässt sie das Rendering vollständig dem Entwickler und liefert dafür typsichere APIs für Sortierung, Filterung und Paginierung –
+ohne eigene Styles oder DOM-Struktur vorzuschreiben.
+
+== Installation
+
+[source,bash]
+----
+npm install @tanstack/react-table
+----
+
+=== Package.json
+
+[source,json]
+----
+include::../basisprojekt-client/package.json[lines=18]
+----
+
+== Ordnerstruktur
+
+Tabellenkomponenten liegen unter `src/features/<feature>/components/`:
+
+[source]
+----
+src/
+  features/
+    customers/
+      components/
+        CustomerTable.tsx   # Tabellenkomponente mit Sortierung, Filter und Paginierung
+----
+
+== Spalten definieren
+
+Spalten werden einmalig außerhalb der Komponente mit dem `columnHelper` definiert.
+`columnHelper.accessor` erzeugt eine typsichere Spalte für ein Datenfeld;
+`columnHelper.display` erzeugt eine berechnete Spalte ohne direkten Datenzugriff (z. B. für Aktionen).
+
+.Spaltendefinition (src/features/customers/components/CustomerTable.tsx)
+[source,tsx]
+----
+include::../basisprojekt-client/src/features/customers/components/CustomerTable.tsx[lines=16..64]
+----
+
+== Tabelle einrichten
+
+`useReactTable` erhält die Daten, die Spaltendefinitionen und den aktuellen State.
+Die Row-Models aktivieren die jeweiligen Features: Sortierung, Filterung und Paginierung.
+
+.useReactTable (src/features/customers/components/CustomerTable.tsx)
+[source,tsx]
+----
+include::../basisprojekt-client/src/features/customers/components/CustomerTable.tsx[lines=71..87]
+----
+
+== Tabelle rendern
+
+`flexRender` rendert Header und Zellen anhand der Spaltendefinition.
+Über `header.column.getToggleSortingHandler()` wird Sortierung per Klick auf den Spalten-Header ausgelöst.
+Ein Suchfeld bindet sich an `globalFilter` und filtert alle Spalten gleichzeitig.
+
+[%collapsible, title="src/features/customers/components/CustomerTable.tsx"]
+====
+[source,tsx]
+----
+include::../basisprojekt-client/src/features/customers/components/CustomerTable.tsx[]
+----
+====
+
+== Verwendung in der Route
+
+Die fertige Tabellenkomponente erhält die geladenen Daten als Prop.
+
+.Kundenliste (src/routes/customers/index.tsx)
+[source,tsx]
+----
+include::../basisprojekt-client/src/routes/customers/index.tsx[]
+----
