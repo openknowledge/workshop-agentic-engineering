@@ -22,7 +22,8 @@ export function useDeleteCustomer() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => deleteCustomer(id),
-    onSuccess: async () => {
+    onSuccess: async (_, id) => {
+      queryClient.removeQueries({ queryKey: customerKeys.detail(id) });
       await queryClient.invalidateQueries({ queryKey: customerKeys.all });
     },
   });
@@ -34,7 +35,6 @@ export function useUpdateCustomer(id: number) {
     mutationFn: (data: Customer) => updateCustomer(id, data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: customerKeys.all });
-      await queryClient.invalidateQueries({ queryKey: customerKeys.detail(id) });
     },
   });
 }

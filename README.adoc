@@ -15,4 +15,6 @@ Steps:
 . link:./setup_steps/tanstack-router.adoc[TanStack Router einrichten]
 . link:./setup_steps/tanstack-query.adoc[TanStack Query einrichten]
 . link:./setup_steps/tanstack-table.adoc[TanStack Table einrichten]
+. link:./setup_steps/zod.adoc[Zod einrichten]
+. link:./setup_steps/tanstack-form.adoc[TanStack Form einrichten]
 
