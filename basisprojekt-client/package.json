@@ -14,7 +14,20 @@
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run",
+    "test:unit:coverage": "VITE_COVERAGE=true vitest run",
+    "pretest:e2e:coverage": "playwright install chromium",
+    "test:e2e:coverage": "PLAYWRIGHT_COVERAGE=true playwright test",
+    "test:coverage:report": "nyc report",
+    "coverage:clean": "rm -rf .nyc_output",
+    "test:coverage": "npm run coverage:clean && npm run test:unit:coverage && npm run test:e2e:coverage && npm run test:coverage:report",
+    "test:coverage:check": "nyc check-coverage"
+  },
+  "nyc": {
+    "branches": 95,
+    "lines": 95,
+    "functions": 95,
+    "statements": 95
   },
   "dependencies": {
     "@tanstack/react-form": "^1.29.1",
@@ -35,16 +48,19 @@
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
+    "@vitest/coverage-istanbul": "^4.1.7",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
     "jsdom": "^25.0.0",
+    "nyc": "^18.0.0",
     "prettier": "^3.8.3",
     "testcontainers": "^12.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
     "vite": "^7.1.7",
+    "vite-plugin-istanbul": "^9.0.0",
     "vitest": "^4.0.0"
   }
 }

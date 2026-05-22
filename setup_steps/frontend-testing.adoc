@@ -12,9 +12,17 @@ Für einzelne UI-Komponenten können *zusätzlich* Tests mit **Vitest** und **Te
 Diese sind optional und ergänzen die Playwright-Tests – sie ersetzen sie nicht.
 Sinnvoll sind sie vor allem für Komponenten mit komplexer interner Logik, die sich isoliert gut testen lassen (z.B. Formularvalidierung, Fehleranzeigen).
 
+=== Ausnahme: Vitest und Testing Library
+
+Für einzelne UI-Komponenten können *zusätzlich* Tests mit **Vitest** und **Testing Library** geschrieben werden.
+Diese sind optional und ergänzen die Playwright-Tests – sie ersetzen sie nicht.
+Sinnvoll sind sie vor allem für Komponenten mit komplexer interner Logik, die sich isoliert gut testen lassen (z.B. Formularvalidierung, Fehleranzeigen).
+
 include::playwright.adoc[leveloffset=+1]
 
 include::testing-library.adoc[leveloffset=+1]
+
+include::frontend-coverage.adoc[leveloffset=+1]
 
 == Ordnerstruktur
 
@@ -33,7 +41,7 @@ basisprojekt-client/
         components/
           CustomerForm.test.tsx # Optionaler Vitest-Komponententest
     test/
-      setup.ts                  # Vitest-Setup (Jest-DOM-Matcher)
+      setup.ts                  # Vitest-Setup inkl. Coverage-Snapshot-Capture
   playwright.config.ts
 ----
 

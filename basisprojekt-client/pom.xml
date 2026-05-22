@@ -42,7 +42,7 @@
               <goal>npm</goal>
             </goals>
             <configuration>
-              <arguments>install</arguments>
+              <arguments>ci</arguments>
             </configuration>
           </execution>
           <execution>
@@ -78,14 +78,14 @@
             </configuration>
           </execution>
           <execution>
-            <id>install-playwright-browsers</id>
+            <id>coverage-clean</id>
             <goals>
-              <goal>npx</goal>
+              <goal>npm</goal>
             </goals>
             <phase>test</phase>
             <configuration>
               <skip>${skipFrontendTests}</skip>
-              <arguments>playwright install chromium</arguments>
+              <arguments>run coverage:clean</arguments>
             </configuration>
           </execution>
           <execution>
@@ -96,7 +96,18 @@
             <phase>test</phase>
             <configuration>
               <skip>${skipFrontendTests}</skip>
-              <arguments>run test</arguments>
+              <arguments>run test:e2e:coverage</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>coverage-check</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <skip>${skipFrontendTests}</skip>
+              <arguments>run test:coverage:check</arguments>
             </configuration>
           </execution>
         </executions>

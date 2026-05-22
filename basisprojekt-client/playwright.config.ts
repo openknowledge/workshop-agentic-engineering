@@ -14,10 +14,13 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  // tag::coverage-webserver[]
   webServer: {
     command: 'npm run dev',
     url: FRONTEND_URL,
     timeout: 120_000,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env.CI && !process.env.PLAYWRIGHT_COVERAGE,
+    env: process.env.PLAYWRIGHT_COVERAGE ? { VITE_COVERAGE: 'true' } : {},
   },
+  // end::coverage-webserver[]
 });

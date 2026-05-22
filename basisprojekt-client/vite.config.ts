@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import istanbul from 'vite-plugin-istanbul';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -19,7 +20,21 @@ export default defineConfig({
     },
   },
   // end::proxy-config[]
-  plugins: [react()],
+  // tag::istanbul-plugin[]
+  plugins: [
+    react(),
+    ...(process.env.VITE_COVERAGE
+      ? [
+          istanbul({
+            include: 'src/**',
+            exclude: ['node_modules', 'src/test/', 'src/main.tsx'],
+            extension: ['.ts', '.tsx'],
+            requireEnv: false,
+          }),
+        ]
+      : []),
+  ],
+  // end::istanbul-plugin[]
   // tag::vitest-config[]
   test: {
     globals: true,

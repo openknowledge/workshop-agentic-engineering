@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures';
 
 // tag::list-test[]
 test('displays the customer list', async ({ page }) => {

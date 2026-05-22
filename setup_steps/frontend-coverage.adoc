@@ -1,0 +1,100 @@
+= Code Coverage Konfiguration
+
+Die Gesamtabdeckung wird aus Playwright-E2E-Tests und Vitest-Komponententests kombiniert.
+Beide Testreihen werden über dasselbe Vite-Plugin (`vite-plugin-istanbul`) instrumentiert,
+damit ihre Coverage-Snapshots dieselben Statement- und Branch-Maps verwenden und sauber zusammengeführt werden können.
+**NYC** führt die Ergebnisse zusammen und prüft die Schwellenwerte.
+
+== Installation
+
+[source,bash]
+----
+npm install --save-dev vite-plugin-istanbul nyc
+----
+
+=== Package.json
+
+[source,json]
+----
+"nyc": "^18.0.0",
+"vite-plugin-istanbul": "^9.0.0"
+----
+
+== Konfiguration
+
+=== vite.config.ts
+
+Das Istanbul-Plugin instrumentiert den Quellcode, sobald `VITE_COVERAGE=true` gesetzt ist –
+sowohl im Dev-Server für Playwright als auch im Vitest-Run, da Vitest dieselbe Vite-Pipeline nutzt.
+Vitests eigener Coverage-Provider wird nicht konfiguriert.
+
+[source,ts]
+----
+include::../basisprojekt-client/vite.config.ts[tag=istanbul-plugin]
+----
+
+=== playwright.config.ts
+
+Wenn `PLAYWRIGHT_COVERAGE` gesetzt ist, wird `VITE_COVERAGE=true` an den Dev-Server übergeben und `reuseExistingServer` deaktiviert, damit immer ein frisch instrumentierter Server startet.
+
+[source,ts]
+----
+include::../basisprojekt-client/playwright.config.ts[tag=coverage-webserver]
+----
+
+=== e2e/fixtures.ts
+
+Das Playwright-Fixture sammelt nach jedem Test die `window.__coverage__`-Daten aus dem Browser und schreibt sie als JSON-Dateien in `.nyc_output/`.
+Das Fixture ist per `auto: true` aktiv – es muss nicht explizit in Testparametern referenziert werden.
+
+[source,ts]
+----
+include::../basisprojekt-client/e2e/fixtures.ts[]
+----
+
+Tests importieren `test` und `expect` aus `e2e/fixtures.ts` statt aus `@playwright/test`:
+
+[source,ts]
+----
+import { test, expect } from '../fixtures';
+----
+
+=== src/test/setup.ts
+
+Vitest-Tests laufen unter jsdom, dort steht `window.__coverage__` nach jedem instrumentierten Modul-Load zur Verfügung.
+Der globale `afterAll`-Hook im Setup schreibt den akkumulierten Stand pro Test-Datei als `vitest-<uuid>.json` ins `.nyc_output/` –
+analog zum Playwright-Fixture.
+
+[source,ts]
+----
+include::../basisprojekt-client/src/test/setup.ts[]
+----
+
+=== .nycrc.json
+
+NYC führt die Coverage-Daten aus `.nyc_output/` zusammen, erstellt den kombinierten Report und prüft die Schwellenwerte.
+
+== Scripts
+
+[source,json]
+----
+include::../basisprojekt-client/package.json[lines=18..24]
+----
+
+== Ablauf
+
+[source]
+----
+1. coverage:clean          → .nyc_output/ leeren
+2. test:unit:coverage      → Vitest läuft mit VITE_COVERAGE=true; setup.ts schreibt
+                              window.__coverage__ als vitest-<uuid>.json nach .nyc_output/
+3. test:e2e:coverage       → Playwright startet einen instrumentierten Dev-Server und
+                              schreibt pro Test einen playwright-<uuid>.json nach .nyc_output/
+4. test:coverage:report    → NYC führt alle Snapshots zusammen und erstellt den Report
+                              in coverage/combined/
+----
+
+Da beide Quellen über dieselbe `vite-plugin-istanbul`-Instrumentierung laufen,
+sind ihre Statement- und Branch-Maps kompatibel und NYC kann die Counts ohne Map-Konflikte addieren.
+
+Nach `test:coverage` schlägt der Build fehl, wenn ein Schwellenwert unterschritten wird (`check-coverage: true` in `.nycrc.json`).
