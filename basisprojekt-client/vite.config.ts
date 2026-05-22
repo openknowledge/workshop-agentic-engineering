@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -19,4 +20,13 @@ export default defineConfig({
   },
   // end::proxy-config[]
   plugins: [react()],
+  // tag::vitest-config[]
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './tests/setup.ts',
+    include: ['tests/**/*.test.{ts,tsx}'],
+    css: false,
+  },
+  // end::vitest-config[]
 });

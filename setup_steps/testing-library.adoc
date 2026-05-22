@@ -1,0 +1,46 @@
+= Vitest und Testing Library Konfiguration
+
+== Installation
+
+[source,bash]
+----
+npm install --save-dev vitest @vitejs/plugin-react jsdom @testing-library/react @testing-library/user-event @testing-library/jest-dom
+----
+
+=== Package.json
+
+[source,json]
+----
+"vitest": "^4.0.0",
+"@vitejs/plugin-react": "^5.0.0",
+"jsdom": "^25.0.0",
+"@testing-library/react": "^16.0.0",
+"@testing-library/user-event": "^14.0.0",
+"@testing-library/jest-dom": "^6.0.0"
+----
+
+== Konfiguration
+
+Vitest-Konfiguration in `vite.config.ts` (`test`-Block):
+
+[source,ts]
+----
+include::../basisprojekt-client/vite.config.ts[tag=vitest-config]
+----
+
+Setup-Datei `src/test/setup.ts` lädt die Jest-DOM-Matcher:
+
+[source,ts]
+----
+include::../basisprojekt-client/src/test/setup.ts[]
+----
+
+== Tests schreiben
+
+Vitest-Tests für Komponenten liegen direkt neben der Komponente in `src/`.
+
+.Beispiel: Formularvalidierung (src/features/customers/components/CustomerForm.test.tsx)
+[source,tsx]
+----
+include::../basisprojekt-client/src/features/customers/components/CustomerForm.test.tsx[tag=validation-test]
+----

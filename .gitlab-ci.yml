@@ -24,6 +24,7 @@ cache:
   key: maven
   paths:
     - .m2/repository
+    - basisprojekt-client/.cache/ms-playwright
 
 # tag::maven-build[]
 maven-build:
@@ -34,6 +35,10 @@ maven-build:
     # so we must set the proxy target statically in the job environment here.
     # In the DinD setup, the backend stack is reachable via the service alias `docker`.
     VITE_BACKEND_ENDPOINT: "http://docker:8080"
+    # Playwright stores browser binaries under ~/.cache/ms-playwright/ by default.
+    # We redirect them to a path within the project directory so that the
+    # GitLab cache (see `cache:` above) can reuse them between builds.
+    PLAYWRIGHT_BROWSERS_PATH: "${CI_PROJECT_DIR}/basisprojekt-client/.cache/ms-playwright"
   before_script:
     - echo api.version=1.44 >> ~/.docker-java.properties
     # Chromium runtime dependencies for Playwright (see https://playwright.dev/docs/ci#system-dependencies)

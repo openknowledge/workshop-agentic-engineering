@@ -15,21 +15,9 @@ npx playwright install
 
 [source,json]
 ----
-include::../basisprojekt-client/package.json[lines=43]
-include::../basisprojekt-client/package.json[lines=59]
+include::../basisprojekt-client/package.json[lines=30]
+include::../basisprojekt-client/package.json[lines=44]
 ----
-
-Damit der Browser im CI automatisch nachgezogen wird,
-gibt es zusätzlich einen `pretest:e2e:coverage`-Hook,
-den npm vor jedem Lauf von `test:e2e:coverage` ausführt:
-
-[source,json]
-----
-include::../basisprojekt-client/package.json[lines=19..20]
-----
-
-Der Aufruf ist idempotent – wenn die passende Browser-Version schon im Cache liegt,
-ist er ein No-Op.
 
 == Konfiguration
 
