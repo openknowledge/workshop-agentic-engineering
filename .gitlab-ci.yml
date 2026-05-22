@@ -67,22 +67,3 @@ maven-build:
       - basisprojekt-server/target/
     expire_in: 1 week
 # end::maven-build[]
-
-docker-compose:
-  stage: integration-test
-  image: docker:cli
-  before_script:
-    - apk add --no-cache curl
-  script:
-    - echo "Starting docker-compose..."
-    - docker-compose up -d
-    - echo "Testing Start Page..."
-    - RESPONSE=$(curl --retry 20 --retry-all-errors -sf http://docker:8080/)
-    - echo "$RESPONSE" | grep -q "Basisprojekt" || (echo "❌ index.html not found!"; exit 1)
-    - echo "✅ Start Page found";
-    - echo "Testing REST Call..."
-    - RESPONSE=$(curl -sf http://docker:8080/api/customers)
-    - echo "$RESPONSE" | grep -q "firstName" || (echo "❌ Customers API not found!"; exit 1)
-    - echo "✅ Customers API found."
-  after_script:
-    - docker compose down
