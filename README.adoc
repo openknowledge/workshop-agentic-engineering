@@ -17,4 +17,5 @@ Steps:
 . link:./setup_steps/tanstack-table.adoc[TanStack Table einrichten]
 . link:./setup_steps/zod.adoc[Zod einrichten]
 . link:./setup_steps/tanstack-form.adoc[TanStack Form einrichten]
+. link:./setup_steps/frontend-testing.adoc[Frontend-Testing mit Playwright einrichten]
 

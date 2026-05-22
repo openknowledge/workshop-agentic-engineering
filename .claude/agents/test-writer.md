@@ -20,6 +20,7 @@ Read the root CLAUDE.md first -- it contains the authoritative coding guidelines
 - Structure: Given/When/Then comments in test methods
 - Assertions: AssertJ `assertThat()` for values, JUnit `assertTrue()` for status checks
 - License header required on all Java files
+- **Language:** All test names, log output (e.g. `console.log`, `console.error`), and code comments in setup/teardown helpers MUST be written in English. Do NOT use German for test descriptions or log messages, even when the surrounding UI is German. UI assertion strings that must match German UI text are the only exception.
 
 When writing tests:
 1. Read existing test files first to match patterns exactly

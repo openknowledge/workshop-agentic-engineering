@@ -54,7 +54,6 @@ Multi-module Maven project with feature-based package structure.
 - Variables/functions: camelCase
 - CSS files: match component name (`App.css`)
 - Schemas: camelCase (`customerSchema.ts`), one file per feature
-- Route files: file names = URL segments; use flat dot notation for single-route params (`$customerId.tsx` not `$customerId/index.tsx`)
 
 ### Frontend Patterns
 

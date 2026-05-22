@@ -5,7 +5,7 @@ interface RouterContext {
   queryClient: QueryClient;
 }
 
-export const Route = createRootRouteWithContext<RouterContext>()({
+export const RootRoute = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
 });
 

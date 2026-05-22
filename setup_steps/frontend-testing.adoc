@@ -1,0 +1,37 @@
+= Frontend-Testing mit Playwright
+
+== Warum Playwright?
+
+**Playwright** ist ein End-to-End-Testframework von Microsoft, das Browser-Interaktionen automatisiert und damit das gesamte Frontend – inklusive Routing, API-Kommunikation und UI-Verhalten – in einer realistischen Umgebung testet.
+
+Im Gegensatz zu rein unit-basierten Ansätzen stellt Playwright sicher, dass die Anwendung aus Nutzerperspektive korrekt funktioniert.
+Wir streben eine **Code-Abdeckung von 95 %** an.
+
+include::playwright.adoc[leveloffset=+1]
+
+== Ordnerstruktur
+
+[source]
+----
+basisprojekt-client/
+  e2e/                          # Playwright End-to-End-Tests
+    customers/
+      customers.spec.ts         # Tests für das Customer-Feature
+    fixtures.ts                 # Test-Fixture
+    global-setup.ts             # Startet den Backend-Stack via testcontainers
+    global-teardown.ts          # Fährt den Stack nach den Tests herunter
+    dockerEnvironment.ts        # Teilt die Compose-Environment-Referenz zwischen Setup/Teardown
+  src/
+    features/
+      customers/
+        components/
+          CustomerForm.tsx      # Komponente
+  playwright.config.ts
+----
+
+== Scripts
+
+[source,json]
+----
+include::../basisprojekt-client/package.json[lines=14..20]
+----

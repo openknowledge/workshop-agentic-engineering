@@ -36,3 +36,14 @@ export async function updateCustomer(id: number, data: Customer): Promise<void> 
     throw new Error('Kunde konnte nicht aktualisiert werden');
   }
 }
+
+export async function createCustomer(data: Customer): Promise<void> {
+  const response = await fetch(BASE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error('Kunde konnte nicht angelegt werden');
+  }
+}

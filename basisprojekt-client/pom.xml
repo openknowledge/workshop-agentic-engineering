@@ -77,9 +77,19 @@
               <arguments>run build</arguments>
             </configuration>
           </execution>
-          <!--
           <execution>
-            <id>test</id>
+            <id>install-playwright-browsers</id>
+            <goals>
+              <goal>npx</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <skip>${skipFrontendTests}</skip>
+              <arguments>playwright install chromium</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-e2e</id>
             <goals>
               <goal>npm</goal>
             </goals>
@@ -89,18 +99,6 @@
               <arguments>run test</arguments>
             </configuration>
           </execution>
-          <execution>
-            <id>test coverage</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <phase>test</phase>
-            <configuration>
-              <skip>${skipFrontendTests}</skip>
-              <arguments>run test:coverage</arguments>
-            </configuration>
-          </execution>
-          -->
         </executions>
       </plugin>
       <plugin>

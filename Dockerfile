@@ -19,18 +19,15 @@ RUN mvn -f basisprojekt-client/pom.xml install -DskipLinting -DskipTests
 # tag::server-build[]
 FROM maven:3.9.9-eclipse-temurin-21 AS mvn
 
-# Cache maven dependency
-COPY basisprojekt-client/pom.xml /usr/basisprojekt-client/
-WORKDIR /usr/basisprojekt-client
-RUN mvn -Dskip.npm install
+# Copy client jar from client stage so the server can resolve the client dependency
+RUN mkdir -p /root/.m2/repository/de/openknowledge
+COPY --from=client-build /root/.m2/repository/de/openknowledge/ /root/.m2/repository/de/openknowledge/
+
+# Cache server maven dependencies
 COPY basisprojekt-server/pom.xml /usr/basisprojekt-server/
 COPY basisprojekt-server/src/main/checkstyle/java.header.plain /usr/basisprojekt-server/src/main/checkstyle/java.header.plain
 WORKDIR /usr/basisprojekt-server
 RUN mvn dependency:resolve dependency:resolve-plugins dependency:go-offline spotless:check
-
-# Copy client jar from client stage
-RUN mkdir -p /usr/basisprojekt-server && mkdir -p /root/.m2/repository/de/openknowledge
-COPY --from=client-build /root/.m2/repository/de/openknowledge/ /root/.m2/repository/de/openknowledge/
 
 # Build server
 COPY basisprojekt-server/src src

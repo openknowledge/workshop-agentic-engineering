@@ -46,6 +46,7 @@
       "Bash(wc *)",
       "Edit(**/basisprojekt-server/src/**)",
       "Edit(**/basisprojekt-client/src/**)",
+      "Edit(**/basisprojekt-client/e2e/**)",
       "Edit(**/basisprojekt-server/pom.xml)",
       "Edit(**/basisprojekt-client/package.json)"
     ],

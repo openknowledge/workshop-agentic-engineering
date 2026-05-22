@@ -90,7 +90,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
     <div className="table-container">
       <div className="table-toolbar">
         <input
-          value={globalFilter ?? ''}
+          value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
           placeholder="Suchen..."
           className="search-input"

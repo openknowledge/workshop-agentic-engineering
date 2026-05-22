@@ -2,6 +2,7 @@
 dist
 build
 coverage
+target
 
 # Dependencies
 node_modules

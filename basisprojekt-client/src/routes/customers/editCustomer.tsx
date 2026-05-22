@@ -6,9 +6,9 @@ import {
   customerQueryOptions,
   useUpdateCustomer,
 } from '../../features/customers/api/customerQueries';
-import { Route as rootRoute } from '../root';
+import { RootRoute as rootRoute } from '../root';
 
-export const Route = createRoute({
+export const EditCustomerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/customers/$customerId',
   loader: ({ context: { queryClient }, params: { customerId } }) =>
@@ -17,7 +17,7 @@ export const Route = createRoute({
 });
 
 export function EditCustomerPage() {
-  const { customerId } = Route.useParams();
+  const { customerId } = EditCustomerRoute.useParams();
   const id = Number(customerId);
   // tag::navigate-usage[]
   const navigate = useNavigate();

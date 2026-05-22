@@ -1,0 +1,108 @@
+= Playwright Konfiguration
+
+== Installation
+
+Neben `@playwright/test` brauchen wir das npm-Paket `testcontainers`,
+um in den End-to-End-Tests den Backend-Stack programmatisch zu starten (siehe <<Backend-Stack via testcontainers>>).
+
+[source,bash]
+----
+npm install --save-dev @playwright/test testcontainers
+npx playwright install
+----
+
+=== Package.json
+
+[source,json]
+----
+include::../basisprojekt-client/package.json[lines=43]
+include::../basisprojekt-client/package.json[lines=59]
+----
+
+Damit der Browser im CI automatisch nachgezogen wird,
+gibt es zusätzlich einen `pretest:e2e:coverage`-Hook,
+den npm vor jedem Lauf von `test:e2e:coverage` ausführt:
+
+[source,json]
+----
+include::../basisprojekt-client/package.json[lines=19..20]
+----
+
+Der Aufruf ist idempotent – wenn die passende Browser-Version schon im Cache liegt,
+ist er ein No-Op.
+
+== Konfiguration
+
+Konfigurationsdatei: `playwright.config.ts` im Wurzelverzeichnis des Frontend-Moduls.
+
+[source,ts]
+----
+include::../basisprojekt-client/playwright.config.ts[]
+----
+
+`globalSetup` und `globalTeardown` verweisen auf zwei TypeScript-Module unter `e2e/`,
+die vor bzw. nach allen Tests im Hauptprozess von Playwright ausgeführt werden.
+Sie kümmern sich um den Backend-Stack (siehe nächster Abschnitt).
+
+== Backend-Stack via testcontainers
+
+Damit die E2E-Tests gegen ein laufendes Backend testen können,
+startet `e2e/global-setup.ts` den Compose-Stack
+(Postgres + Flyway + Spring-Boot-Server)
+und fährt `e2e/global-teardown.ts` ihn nach dem Lauf wieder herunter.
+Statt `docker compose` direkt über `spawn` aufzurufen,
+verwenden wir die `DockerComposeEnvironment` aus dem npm-Paket `testcontainers` –
+dasselbe Pattern, das das Backend für seine Integrationstests einsetzt
+(`DatabaseExtension`, siehe link:./database-test-setup.adoc[Database Test Setup]).
+
+Vorteile gegenüber einem direkten `docker compose`-Aufruf:
+
+- **Sauberes Lifecycle-Handling:** `environment.down()` räumt sicher auf, ohne Lockfile-Workarounds.
+- **Programmatische API:** Lebenszyklus und Konfiguration über TypeScript statt Shell-Spawn-Aufrufe.
+
+[NOTE]
+====
+Zwei Einschränkungen, die testcontainers-node hier nicht löst:
+
+1. `DockerComposeEnvironment` ruft intern weiterhin `docker compose` als Subprozess auf
+   (Einzel-Container über `GenericContainer` laufen dagegen über die Docker HTTP-API via `dockerode`).
+   Die Docker CLI plus Compose-Plugin müssen also weiterhin im Test-Image verfügbar sein – siehe <<Pipeline-Setup>>.
+2. Playwright startet den `webServer` (vite) **bevor** `globalSetup` ausgeführt wird.
+   Eine in `globalSetup` ermittelte URL kann den bereits gestarteten vite-Kindprozess nicht mehr beeinflussen –
+   `VITE_BACKEND_ENDPOINT` muss daher schon beim Job-Start des CI-Runners gesetzt sein
+   (siehe `variables:`-Block in <<Pipeline-Setup>>).
+   Lokal greift der Vite-Default `http://127.0.0.1:8080`, weil das Compose-File den Port `8080:8080` direkt auf den Host mappt.
+====
+
+=== e2e/global-setup.ts
+
+[source,ts]
+----
+include::../basisprojekt-client/e2e/global-setup.ts[]
+----
+
+Unser Playwright Setup bietet den Vorteil, entweder gegen ein eigen hochgefahrenes Backend zu testen, oder aber gegen die bereits laufende Dev Instanz. Dies kann helfen Bugs auf der Testumgebung live zu identifizieren.
+
+Dazu wird beim Start überprüft, ob auf localhost:8080 bereits ein Backend läuft.
+
+Die ermittelte Backend-URL landet als `VITE_BACKEND_ENDPOINT` in `process.env`
+und wird vom Vite-Dev-Server als Proxy-Ziel für `/api`-Aufrufe verwendet
+(siehe `vite.config.ts`, `server.proxy`).
+
+== Tests schreiben
+
+Playwright-Tests liegen unter `e2e/`.
+
+.Beispiel: Kundenliste anzeigen (e2e/customers/customers.spec.ts)
+[source,ts]
+----
+include::../basisprojekt-client/e2e/customers/customers.spec.ts[tags=list-test]
+----
+
+== IntelliJ IDEA Setup
+
+Playwright-Tests lassen sich direkt aus IntelliJ ausführen, wenn das **Playwright**-Plugin installiert ist:
+
+. Plugin installieren: _Settings → Plugins → Marketplace → "Playwright"_
+. Testdatei öffnen und den grünen Play-Button neben dem Test anklicken
+. Alternativ: Run-Konfiguration für `playwright test` anlegen
