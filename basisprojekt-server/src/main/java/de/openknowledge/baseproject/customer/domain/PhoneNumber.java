@@ -17,6 +17,10 @@ package de.openknowledge.baseproject.customer.domain;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.Size;
 
 @Embeddable
-public record PhoneNumber(@JsonValue String phoneNumber) {}
+public record PhoneNumber(@JsonValue @Size(max = MAX_LENGTH) String phoneNumber) {
+
+    public static final int MAX_LENGTH = 50;
+}

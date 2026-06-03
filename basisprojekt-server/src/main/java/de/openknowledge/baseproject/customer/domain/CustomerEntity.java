@@ -41,10 +41,19 @@ public class CustomerEntity {
     private Long id;
 
     @Embedded
-    @AttributeOverride(name = "firstName.firstName", column = @Column(name = "C_FIRST_NAME"))
-    @AttributeOverride(name = "lastName.lastName", column = @Column(name = "C_LAST_NAME"))
-    @AttributeOverride(name = "email.email", column = @Column(name = "C_EMAIL"))
-    @AttributeOverride(name = "phoneNumber.phoneNumber", column = @Column(name = "C_PHONE_NUMBER"))
+    @AttributeOverride(
+            name = "firstName.firstName",
+            column =
+                    @Column(name = "C_FIRST_NAME", length = FirstName.MAX_LENGTH, nullable = false))
+    @AttributeOverride(
+            name = "lastName.lastName",
+            column = @Column(name = "C_LAST_NAME", length = LastName.MAX_LENGTH, nullable = false))
+    @AttributeOverride(
+            name = "email.email",
+            column = @Column(name = "C_EMAIL", length = Email.MAX_LENGTH, nullable = false))
+    @AttributeOverride(
+            name = "phoneNumber.phoneNumber",
+            column = @Column(name = "C_PHONE_NUMBER", length = PhoneNumber.MAX_LENGTH))
     @AttributeOverride(name = "birthDate.birthDate", column = @Column(name = "C_BIRTH_DATE"))
     private Customer customer;
 

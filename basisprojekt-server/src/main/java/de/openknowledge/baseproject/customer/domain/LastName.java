@@ -18,6 +18,10 @@ package de.openknowledge.baseproject.customer.domain;
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Embeddable
-public record LastName(@JsonValue @NotBlank String lastName) {}
+public record LastName(@JsonValue @NotBlank @Size(max = MAX_LENGTH) String lastName) {
+
+    public static final int MAX_LENGTH = 255;
+}
