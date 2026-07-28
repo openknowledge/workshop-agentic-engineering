@@ -17,28 +17,23 @@ package de.openknowledge.baseproject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
+import de.openknowledge.baseproject.infrastructure.test.IntegrationTest;
 import java.net.URI;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.client.RestClient;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.transactionunit.RollbackAfterTest;
 
-@Testcontainers
-@SpringBootTest(webEnvironment = RANDOM_PORT, properties = "spring.flyway.enabled=true")
-@RollbackAfterTest
+@IntegrationTest
 class CustomerControllerTest {
 
     @Container @ServiceConnection
@@ -49,7 +44,7 @@ class CustomerControllerTest {
     @Autowired private RestClient.Builder clientBuilder;
 
     @BeforeEach
-    void setupRestClient() {
+    void setup() {
         clientBuilder.baseUrl("http://localhost:" + port + "/api");
     }
 
@@ -92,6 +87,122 @@ class CustomerControllerTest {
         // Then
         assertThat(body.get("firstName")).isEqualTo("Max");
         assertThat(body.get("email")).isEqualTo("max.mustermann@example.com");
+        assertThat(body.get("externalUserId")).isEqualTo(11);
+    }
+
+    @Test
+    void createCustomerWithExistingExternalUserSkipsUserCreation() throws Exception {
+        // Given
+        RestClient client = clientBuilder.build();
+
+        // When
+        var createResponse =
+                client.post()
+                        .uri("/customers")
+                        .contentType(APPLICATION_JSON)
+                        .body(
+                                """
+                                {"firstName":"Known","lastName":"User","email":"known@example.com"}
+                                """)
+                        .retrieve()
+                        .toBodilessEntity();
+
+        // Then
+        assertThat(createResponse.getStatusCode().value()).isEqualTo(CREATED.value());
+        Map<String, Object> body =
+                client.get()
+                        .uri(createResponse.getHeaders().getLocation())
+                        .accept(APPLICATION_JSON)
+                        .retrieve()
+                        .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+        assertThat(body.get("externalUserId")).isEqualTo(7);
+    }
+
+    @Test
+    void createCustomerRollsBackWhenLookupFails() throws Exception {
+        // Given
+        RestClient client = clientBuilder.build();
+
+        // When
+        var response =
+                client.post()
+                        .uri("/customers")
+                        .contentType(APPLICATION_JSON)
+                        .body(
+                                """
+                                {"firstName":"Fail","lastName":"Lookup","email":"fail-lookup@example.com"}
+                                """)
+                        .retrieve()
+                        .onStatus(status -> status.value() == 502, (req, res) -> {})
+                        .toBodilessEntity();
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(502);
+        String listBody =
+                client.get()
+                        .uri("/customers")
+                        .accept(APPLICATION_JSON)
+                        .retrieve()
+                        .body(String.class);
+        assertThat(listBody).doesNotContain("fail-lookup@example.com");
+    }
+
+    @Test
+    void createCustomerRollsBackWhenUserCreationFails() throws Exception {
+        // Given
+        RestClient client = clientBuilder.build();
+
+        // When
+        var response =
+                client.post()
+                        .uri("/customers")
+                        .contentType(APPLICATION_JSON)
+                        .body(
+                                """
+                                {"firstName":"Fail","lastName":"CreateUser","email":"fail-create-user@example.com"}
+                                """)
+                        .retrieve()
+                        .onStatus(status -> status.value() == 502, (req, res) -> {})
+                        .toBodilessEntity();
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(502);
+        String listBody =
+                client.get()
+                        .uri("/customers")
+                        .accept(APPLICATION_JSON)
+                        .retrieve()
+                        .body(String.class);
+        assertThat(listBody).doesNotContain("fail-create-user@example.com");
+    }
+
+    @Test
+    void createCustomerRollsBackWhenTodoCreationFails() throws Exception {
+        // Given
+        RestClient client = clientBuilder.build();
+
+        // When
+        var response =
+                client.post()
+                        .uri("/customers")
+                        .contentType(APPLICATION_JSON)
+                        .body(
+                                """
+                                {"firstName":"Fail","lastName":"Todo","email":"fail-todo@example.com"}
+                                """)
+                        .retrieve()
+                        .onStatus(status -> status.value() == 502, (req, res) -> {})
+                        .toBodilessEntity();
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(502);
+        String listBody =
+                client.get()
+                        .uri("/customers")
+                        .accept(APPLICATION_JSON)
+                        .retrieve()
+                        .body(String.class);
+        assertThat(listBody).doesNotContain("fail-todo@example.com");
     }
 
     @Test
@@ -162,6 +273,7 @@ class CustomerControllerTest {
                         .retrieve()
                         .body(new ParameterizedTypeReference<Map<String, Object>>() {});
         assertThat(updated.get("firstName")).isEqualTo("After");
+        assertThat(updated.get("externalUserId")).isEqualTo(11);
     }
 
     @Test

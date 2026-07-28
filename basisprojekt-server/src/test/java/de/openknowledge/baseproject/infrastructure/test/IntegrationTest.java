@@ -31,6 +31,7 @@ import org.transactionunit.RollbackAfterTest;
 @Retention(RUNTIME)
 @DatabaseTest
 @RollbackAfterTest
+@WireMock
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 public @interface IntegrationTest {}
 // end::annotation

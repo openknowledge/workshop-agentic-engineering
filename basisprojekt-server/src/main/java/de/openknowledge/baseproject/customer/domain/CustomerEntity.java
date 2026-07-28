@@ -55,6 +55,9 @@ public class CustomerEntity {
             name = "phoneNumber.phoneNumber",
             column = @Column(name = "C_PHONE_NUMBER", length = PhoneNumber.MAX_LENGTH))
     @AttributeOverride(name = "birthDate.birthDate", column = @Column(name = "C_BIRTH_DATE"))
+    @AttributeOverride(
+            name = "externalUserId.externalUserId",
+            column = @Column(name = "C_EXTERNAL_USER_ID"))
     private Customer customer;
 
     public CustomerEntity(Customer customer) {

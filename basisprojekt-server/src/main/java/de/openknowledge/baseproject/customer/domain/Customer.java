@@ -15,6 +15,7 @@
  */
 package de.openknowledge.baseproject.customer.domain;
 
+import de.openknowledge.baseproject.todo.integration.ExternalUserId;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
@@ -23,4 +24,10 @@ public record Customer(
         LastName lastName,
         Email email,
         PhoneNumber phoneNumber,
-        BirthDate birthDate) {}
+        BirthDate birthDate,
+        ExternalUserId externalUserId) {
+
+    public Customer withExternalUserId(ExternalUserId newExternalUserId) {
+        return new Customer(firstName, lastName, email, phoneNumber, birthDate, newExternalUserId);
+    }
+}

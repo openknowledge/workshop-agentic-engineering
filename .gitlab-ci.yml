@@ -65,6 +65,8 @@ maven-build:
     - curl -fsSL https://github.com/docker/compose/releases/download/v2.32.4/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
     - chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
   script:
+    # First build the docker image. It is required by the fontend tests.
+    - docker compose build
     - mvn clean install
   artifacts:
     paths:

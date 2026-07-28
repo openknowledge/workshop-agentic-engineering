@@ -22,3 +22,5 @@ Steps:
 . link:./setup_steps/deployment.adoc[Branch auf OK Testumgebung deployen]
 . link:./setup_steps/monitoring.adoc[Monitoring einrichten]
 . link:./setup_steps/git-workflow.adoc[Git Workflow]
+. link:./setup_steps/external-client-wiremock.adoc[Externe Clients anbinden]
+

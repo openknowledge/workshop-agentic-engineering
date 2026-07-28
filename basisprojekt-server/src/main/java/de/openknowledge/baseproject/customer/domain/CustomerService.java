@@ -15,6 +15,12 @@
  */
 package de.openknowledge.baseproject.customer.domain;
 
+import de.openknowledge.baseproject.todo.integration.DisplayName;
+import de.openknowledge.baseproject.todo.integration.ExternalUserId;
+import de.openknowledge.baseproject.todo.integration.Title;
+import de.openknowledge.baseproject.todo.integration.Todo;
+import de.openknowledge.baseproject.todo.integration.TodoRepository;
+import de.openknowledge.baseproject.todo.integration.TodoUser;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -26,7 +32,11 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class CustomerService {
 
+    private static final Title WELCOME_TODO_TITLE = new Title("Send welcome email");
+
     @Autowired private CustomerRepository repository;
+
+    @Autowired private TodoRepository todoRepository;
 
     public List<CustomerEntity> findAllCustomers() {
         return repository.findAll();
@@ -36,15 +46,17 @@ public class CustomerService {
         return repository.findById(id);
     }
 
-    public CustomerEntity createCustomer(Customer customer) {
+    public CustomerEntity registerCustomer(Customer customer) {
         repository
                 .findByCustomerEmail(customer.email())
                 .ifPresent(
                         existing -> {
                             throw new IllegalArgumentException("Email already in use");
                         });
-        CustomerEntity entity = new CustomerEntity(customer);
-        return repository.save(entity);
+        TodoUser externalUser = lookupOrCreateExternalUser(customer);
+        todoRepository.createTodo(new Todo(externalUser.id(), WELCOME_TODO_TITLE, false));
+        Customer updated = customer.withExternalUserId(externalUser.id());
+        return repository.save(new CustomerEntity(updated));
     }
 
     public void updateCustomer(Long id, Customer customer) {
@@ -58,7 +70,10 @@ public class CustomerService {
         repository
                 .findById(id)
                 .ifPresentOrElse(
-                        entity -> entity.update(customer),
+                        entity -> {
+                            ExternalUserId preserved = entity.getCustomer().externalUserId();
+                            entity.update(customer.withExternalUserId(preserved));
+                        },
                         () -> {
                             throw new EntityNotFoundException();
                         });
@@ -72,5 +87,22 @@ public class CustomerService {
                         () -> {
                             throw new EntityNotFoundException();
                         });
+    }
+
+    private TodoUser lookupOrCreateExternalUser(Customer customer) {
+        return todoRepository
+                .findUserByEmail(customer.email())
+                .orElseGet(
+                        () ->
+                                todoRepository.createUser(
+                                        new TodoUser(
+                                                null,
+                                                buildDisplayName(customer),
+                                                customer.email())));
+    }
+
+    private DisplayName buildDisplayName(Customer customer) {
+        return new DisplayName(
+                customer.firstName().firstName() + " " + customer.lastName().lastName());
     }
 }

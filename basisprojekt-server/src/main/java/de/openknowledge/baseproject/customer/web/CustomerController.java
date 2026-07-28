@@ -15,8 +15,8 @@
  */
 package de.openknowledge.baseproject.customer.web;
 
+import static org.springframework.http.HttpStatus.BAD_GATEWAY;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -24,6 +24,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import de.openknowledge.baseproject.customer.domain.Customer;
 import de.openknowledge.baseproject.customer.domain.CustomerEntity;
 import de.openknowledge.baseproject.customer.domain.CustomerService;
+import de.openknowledge.baseproject.todo.integration.TodoException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -62,10 +63,15 @@ public class CustomerController {
     }
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    @ResponseStatus(CREATED)
     public ResponseEntity<Void> createCustomer(@Valid @RequestBody Customer customer) {
-        long customerId = customerService.createCustomer(customer).getId();
-        return ResponseEntity.created(createCustomerUri(customerId)).build();
+        try {
+            long customerId = customerService.registerCustomer(customer).getId();
+            return ResponseEntity.created(createCustomerUri(customerId)).build();
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(BAD_REQUEST, e.getMessage());
+        } catch (TodoException e) {
+            throw new ResponseStatusException(BAD_GATEWAY, "External user service unavailable");
+        }
     }
 
     @PutMapping(path = "/{id}", consumes = APPLICATION_JSON_VALUE)
