@@ -30,8 +30,14 @@ async function isBackendReachable(url: string): Promise<boolean> {
 // (local: Vite default `http://127.0.0.1:8080`; CI: via job variable in `.gitlab-ci.yml`).
 // `globalSetup` itself can no longer propagate the value to the webServer child process.
 export default async function globalSetup(): Promise<void> {
-  if (await isBackendReachable(`${LOCAL_BACKEND_URL}/`)) {
-    console.log('[playwright] Backend already reachable, skipping docker compose.');
+  if (process.env.PLAYWRIGHT_SKIP_DOCKER === 'true') {
+    if (!(await isBackendReachable(`${LOCAL_BACKEND_URL}/`))) {
+      throw new Error(
+        `[playwright] PLAYWRIGHT_SKIP_DOCKER=true, but backend is not reachable at ${LOCAL_BACKEND_URL}. ` +
+          'Start the docker compose stack manually or run the test script without :dev suffix.'
+      );
+    }
+    console.log('[playwright] PLAYWRIGHT_SKIP_DOCKER=true, using existing backend.');
     return;
   }
 

@@ -27,7 +27,7 @@ export default defineConfig({
       ? [
           istanbul({
             include: 'src/**',
-            exclude: ['node_modules', 'src/test/', 'src/main.tsx'],
+            exclude: ['node_modules', 'tests/', 'src/main.tsx'],
             extension: ['.ts', '.tsx'],
             requireEnv: false,
           }),

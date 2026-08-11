@@ -15,7 +15,7 @@ if (process.env.VITE_COVERAGE) {
   afterAll(() => {
     const coverage = window.__coverage__;
     if (!coverage) return;
-    const outDir = join(dirname(fileURLToPath(import.meta.url)), '../../.nyc_output');
+    const outDir = join(dirname(fileURLToPath(import.meta.url)), '../.nyc_output');
     mkdirSync(outDir, { recursive: true });
     writeFileSync(join(outDir, `vitest-${randomUUID()}.json`), JSON.stringify(coverage));
   });

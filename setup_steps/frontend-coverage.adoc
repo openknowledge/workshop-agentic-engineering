@@ -1,4 +1,4 @@
-= Code Coverage Konfiguration
+= Code Coverage Konfiguration im Frontend
 
 Die Gesamtabdeckung wird aus Playwright-E2E-Tests und Vitest-Komponententests kombiniert.
 Beide Testreihen werden über dasselbe Vite-Plugin (`vite-plugin-istanbul`) instrumentiert,

@@ -71,7 +71,10 @@ include::../basisprojekt-client/e2e/global-setup.ts[]
 
 Unser Playwright Setup bietet den Vorteil, entweder gegen ein eigen hochgefahrenes Backend zu testen, oder aber gegen die bereits laufende Dev Instanz. Dies kann helfen Bugs auf der Testumgebung live zu identifizieren.
 
-Dazu wird beim Start überprüft, ob auf localhost:8080 bereits ein Backend läuft.
+Welche Variante genutzt wird, wird per npm-Script explizit gewählt:
+
+- `npm test`, `npm run test:ui`, `npm run test:e2e:coverage` starten den Docker-Stack via testcontainers.
+- `npm run test:dev`, `npm run test:ui:dev`, `npm run test:e2e:coverage:dev` setzen die Umgebungsvariable `PLAYWRIGHT_SKIP_DOCKER=true` und erwarten ein bereits laufendes Backend auf `localhost:8080`. Ist dort nichts erreichbar, bricht `globalSetup` mit einer Fehlermeldung ab.
 
 Die ermittelte Backend-URL landet als `VITE_BACKEND_ENDPOINT` in `process.env`
 und wird vom Vite-Dev-Server als Proxy-Ziel für `/api`-Aufrufe verwendet
