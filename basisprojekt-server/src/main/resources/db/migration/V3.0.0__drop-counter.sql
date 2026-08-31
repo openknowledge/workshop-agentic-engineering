@@ -1,2 +1,0 @@
-DROP TABLE IF EXISTS tab_counter;
-DROP SEQUENCE IF EXISTS seq_c_id;

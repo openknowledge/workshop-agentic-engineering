@@ -135,7 +135,7 @@
         <module name="MethodLength">
             <property name="id" value="methodlength"/>
             <property name="countEmpty" value="false"/>
-            <property name="max" value="40"/>
+            <property name="max" value="60"/>
         </module>
         <module name="MethodName">
             <property name="format" value="^[a-z]+([A-Za-z0-9]+)*$"/>

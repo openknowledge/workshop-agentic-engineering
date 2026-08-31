@@ -18,10 +18,16 @@ package de.openknowledge.baseproject.customer.domain;
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Embeddable
-public record FirstName(@JsonValue @NotBlank @Size(max = MAX_LENGTH) String firstName) {
+public record FirstName(
+        @JsonValue
+                @NotBlank
+                @Size(max = MAX_LENGTH)
+                @Pattern(regexp = "\\D*", message = "{FirstName.message}")
+                String firstName) {
 
     public static final int MAX_LENGTH = 255;
 }

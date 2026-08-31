@@ -16,28 +16,27 @@
 package de.openknowledge.baseproject;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import de.openknowledge.baseproject.infrastructure.test.IntegrationTest;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 
 @IntegrationTest
 class CustomerControllerTest {
-
-    @Container @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
 
     @LocalServerPort private int port;
 
@@ -46,6 +45,45 @@ class CustomerControllerTest {
     @BeforeEach
     void setup() {
         clientBuilder.baseUrl("http://localhost:" + port + "/api");
+    }
+
+    @Test
+    void multipleAdditionalEmails() throws Exception {
+        // Given
+        RestClient client = clientBuilder.build();
+
+        // When
+        var createResponse =
+                client.post()
+                        .uri("/customers")
+                        .contentType(APPLICATION_JSON)
+                        .body(
+                                """
+                                {
+                                    "name": {
+                                        "firstName": "Max",
+                                        "lastName": "Mustermann"
+                                    },
+                                    "email": "max.mustermann@example.com",
+                                    "phoneNumber": "+49 123 4567890",
+                                    "birthDate": "1990-05-15",
+                                    "additionalEmails": [
+                                        "max.mustermann@example2.com"
+                                    ],
+                                    "additionalPhoneNumbers": [
+                                        {
+                                            "type": "PRIVATE",
+                                            "phoneNumber": "+49157123456"
+                                        }
+                                    ],
+                                    "externalUserId": 0
+                                }
+                            """)
+                        .retrieve()
+                        .toBodilessEntity();
+
+        // Then
+        assertThat(createResponse.getStatusCode().value()).isEqualTo(CREATED.value());
     }
 
     @Test
@@ -61,8 +99,10 @@ class CustomerControllerTest {
                         .body(
                                 """
                                 {
-                                    "firstName": "Max",
-                                    "lastName": "Mustermann",
+                                    "name": {
+                                        "firstName": "Max",
+                                        "lastName": "Mustermann"
+                                    },
                                     "email": "max.mustermann@example.com",
                                     "phoneNumber": "+49 123 4567890",
                                     "birthDate": "1990-05-15"
@@ -85,9 +125,133 @@ class CustomerControllerTest {
                         .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
         // Then
-        assertThat(body.get("firstName")).isEqualTo("Max");
+        Map<String, Object> name = (Map<String, Object>) body.get("name");
+        assertThat(name.get("firstName")).isEqualTo("Max");
+        assertThat(name.get("lastName")).isEqualTo("Mustermann");
         assertThat(body.get("email")).isEqualTo("max.mustermann@example.com");
         assertThat(body.get("externalUserId")).isEqualTo(11);
+    }
+
+    @Test
+    void createInvalidCustomerFails() throws Exception {
+        // Given
+        RestClient client = clientBuilder.build();
+
+        // When
+        var exception =
+                assertThrows(
+                        HttpClientErrorException.BadRequest.class,
+                        () ->
+                                client.post()
+                                        .uri("/customers")
+                                        .contentType(APPLICATION_JSON)
+                                        .body(
+                                                """
+                                {
+                                    "name": {
+                                        "firstName": "Max1"
+                                    },
+                                    "phoneNumber": "+49+123 4567890",
+                                    "birthDate": "1990-05-15"
+                                }
+                                """)
+                                        .retrieve()
+                                        .toBodilessEntity());
+
+        // Then
+        assertThat(exception.getStatusCode().value()).isEqualTo(BAD_REQUEST.value());
+
+        // When
+        Map<String, Object> body =
+                exception.getResponseBodyAs(
+                        new ParameterizedTypeReference<Map<String, Object>>() {});
+
+        // Then
+        assertThat(body).contains(entry("instance", "/api/customers"));
+        assertThat(body).containsKey("invalid-params");
+        List<Map<String, String>> invalidParams =
+                (List<Map<String, String>>) body.get("invalid-params");
+        assertThat(invalidParams)
+                .containsExactlyInAnyOrder(
+                        Map.of("name", "name.firstName", "reason", "darf keine Ziffern enthalten"),
+                        Map.of("name", "name.lastName", "reason", "darf nicht null sein"),
+                        Map.of(
+                                "name",
+                                "phoneNumber",
+                                "reason",
+                                "darf nur Ziffern, Klammern, Slashes oder Bindestriche enthalten und optional mit + beginnen"),
+                        Map.of("name", "email", "reason", "darf nicht null sein"));
+    }
+
+    @Test
+    void createCustomerWithInvalidAdditionalParametersFails() throws Exception {
+        // Given
+        RestClient client = clientBuilder.build();
+
+        // When
+        var exception =
+                assertThrows(
+                        HttpClientErrorException.BadRequest.class,
+                        () ->
+                                client.post()
+                                        .uri("/customers")
+                                        .contentType(APPLICATION_JSON)
+                                        .body(
+                                                """
+                                {
+                                    "name": {
+                                        "firstName": "Max",
+                                        "lastName": "Mustermann"
+                                    },
+                                    "email": "max.mustermann@openknowledge.de",
+                                    "phoneNumber": "+49 123 4567890",
+                                    "birthDate": "1990-05-15",
+                                    "additionalEmails": ["max.mustermann(at)gmail.com"],
+                                    "additionalPhoneNumbers": [
+                                        {
+                                            "type": "BUSINESS",
+                                            "phoneNumber": "+49+123 4567890"
+                                        },
+                                        {
+                                            "type": "HOLIDAY",
+                                            "phoneNumber": "+49 123 4567890"
+                                        }
+                                    ]
+                                }
+                                """)
+                                        .retrieve()
+                                        .toBodilessEntity());
+
+        // Then
+        assertThat(exception.getStatusCode().value()).isEqualTo(BAD_REQUEST.value());
+
+        // When
+        Map<String, Object> body =
+                exception.getResponseBodyAs(
+                        new ParameterizedTypeReference<Map<String, Object>>() {});
+
+        // Then
+        assertThat(body).contains(entry("instance", "/api/customers"));
+        assertThat(body).containsKey("invalid-params");
+        List<Map<String, String>> invalidParams =
+                (List<Map<String, String>>) body.get("invalid-params");
+        assertThat(invalidParams)
+                .containsExactlyInAnyOrder(
+                        Map.of(
+                                "name",
+                                "additionalPhoneNumbers[0].phoneNumber",
+                                "reason",
+                                "darf nur Ziffern, Klammern, Slashes oder Bindestriche enthalten und optional mit + beginnen"),
+                        Map.of(
+                                "name",
+                                "additionalPhoneNumbers[1].type",
+                                "reason",
+                                "muss einer der folgenden Werte sein: [PRIVATE, BUSINESS, MOBILE]"),
+                        Map.of(
+                                "name",
+                                "additionalEmails[0]",
+                                "reason",
+                                "muss eine korrekt formatierte E-Mail-Adresse sein"));
     }
 
     @Test
@@ -102,7 +266,7 @@ class CustomerControllerTest {
                         .contentType(APPLICATION_JSON)
                         .body(
                                 """
-                                {"firstName":"Known","lastName":"User","email":"known@example.com"}
+                                {"name":{"firstName":"Known","lastName":"User"},"email":"known@example.com"}
                                 """)
                         .retrieve()
                         .toBodilessEntity();
@@ -130,7 +294,7 @@ class CustomerControllerTest {
                         .contentType(APPLICATION_JSON)
                         .body(
                                 """
-                                {"firstName":"Fail","lastName":"Lookup","email":"fail-lookup@example.com"}
+                                {"name":{"firstName":"Fail","lastName":"Lookup"},"email":"fail-lookup@example.com"}
                                 """)
                         .retrieve()
                         .onStatus(status -> status.value() == 502, (req, res) -> {})
@@ -159,7 +323,7 @@ class CustomerControllerTest {
                         .contentType(APPLICATION_JSON)
                         .body(
                                 """
-                                {"firstName":"Fail","lastName":"CreateUser","email":"fail-create-user@example.com"}
+                                {"name":{"firstName":"Fail","lastName":"CreateUser"},"email":"fail-create-user@example.com"}
                                 """)
                         .retrieve()
                         .onStatus(status -> status.value() == 502, (req, res) -> {})
@@ -188,7 +352,7 @@ class CustomerControllerTest {
                         .contentType(APPLICATION_JSON)
                         .body(
                                 """
-                                {"firstName":"Fail","lastName":"Todo","email":"fail-todo@example.com"}
+                                {"name":{"firstName":"Fail","lastName":"Todo"},"email":"fail-todo@example.com"}
                                 """)
                         .retrieve()
                         .onStatus(status -> status.value() == 502, (req, res) -> {})
@@ -216,8 +380,10 @@ class CustomerControllerTest {
                         .body(
                                 """
                                 {
-                                    "firstName": "Erika",
-                                    "lastName": "Musterfrau",
+                                    "name": {
+                                        "firstName": "Erika",
+                                        "lastName": "Musterfrau"
+                                    },
                                     "email": "erika.musterfrau@example.com"
                                 }
                                 """)
@@ -247,7 +413,7 @@ class CustomerControllerTest {
                         .contentType(APPLICATION_JSON)
                         .body(
                                 """
-                                {"firstName":"Before","lastName":"Update","email":"update-test@example.com"}
+                                {"name":{"firstName":"Before","lastName":"Update"},"email":"update-test@example.com"}
                                 """)
                         .retrieve()
                         .toBodilessEntity();
@@ -259,7 +425,7 @@ class CustomerControllerTest {
                         .contentType(APPLICATION_JSON)
                         .body(
                                 """
-                                {"firstName":"After","lastName":"Update","email":"update-test@example.com"}
+                                {"name":{"firstName":"After","lastName":"Update"},"email":"update-test@example.com"}
                                 """)
                         .retrieve()
                         .toBodilessEntity();
@@ -272,7 +438,8 @@ class CustomerControllerTest {
                         .accept(APPLICATION_JSON)
                         .retrieve()
                         .body(new ParameterizedTypeReference<Map<String, Object>>() {});
-        assertThat(updated.get("firstName")).isEqualTo("After");
+        Map<String, Object> updatedName = (Map<String, Object>) updated.get("name");
+        assertThat(updatedName.get("firstName")).isEqualTo("After");
         assertThat(updated.get("externalUserId")).isEqualTo(11);
     }
 
@@ -287,8 +454,10 @@ class CustomerControllerTest {
                         .body(
                                 """
                                 {
-                                    "firstName": "ToDelete",
-                                    "lastName": "User",
+                                    "name": {
+                                        "firstName": "ToDelete",
+                                        "lastName": "User"
+                                    },
                                     "email": "delete-test@example.com"
                                 }
                                 """)

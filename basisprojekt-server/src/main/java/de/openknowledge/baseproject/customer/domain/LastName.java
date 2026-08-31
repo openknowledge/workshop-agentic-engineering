@@ -15,13 +15,27 @@
  */
 package de.openknowledge.baseproject.customer.domain;
 
+import static de.openknowledge.baseproject.infrastructure.validation.Validate.validate;
+
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+// tag::validation[]
 @Embeddable
-public record LastName(@JsonValue @NotBlank @Size(max = MAX_LENGTH) String lastName) {
+public record LastName(
+        @JsonValue
+                @NotBlank
+                @Size(max = MAX_LENGTH)
+                @Pattern(regexp = "\\D*", message = "{LastName.message}")
+                String lastName) {
 
     public static final int MAX_LENGTH = 255;
+
+    public LastName {
+        validate(LastName.class, lastName);
+    }
 }
+// end:validation

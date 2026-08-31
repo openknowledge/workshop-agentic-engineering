@@ -15,7 +15,7 @@ services:
         condition: service_started
     volumes:
       - ./basisprojekt-server/src/main/resources/db/migration:/flyway/sql
-      - ./basisprojekt-server/src/test/resources/db/testdata.sql:/flyway/testdata/V5.0.0__insert-testdata.sql
+      - ./basisprojekt-server/src/test/resources/db/testdata.sql:/flyway/testdata/V2.0.0__insert-testdata.sql
 # end::database[]
 
 # tag::wiremock[]

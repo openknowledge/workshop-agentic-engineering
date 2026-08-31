@@ -102,7 +102,7 @@ public class CustomerService {
     }
 
     private DisplayName buildDisplayName(Customer customer) {
-        return new DisplayName(
-                customer.firstName().firstName() + " " + customer.lastName().lastName());
+        Name name = customer.name();
+        return new DisplayName(name.firstName().firstName() + " " + name.lastName().lastName());
     }
 }

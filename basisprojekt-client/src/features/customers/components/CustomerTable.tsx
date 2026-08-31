@@ -42,8 +42,8 @@ function ActionButtons({ customerId }: { customerId: string }) {
 }
 
 const columns = [
-  columnHelper.accessor('firstName', { header: 'Vorname' }),
-  columnHelper.accessor('lastName', { header: 'Nachname' }),
+  columnHelper.accessor('name.firstName', { id: 'firstName', header: 'Vorname' }),
+  columnHelper.accessor('name.lastName', { id: 'lastName', header: 'Nachname' }),
   columnHelper.accessor('email', { header: 'E-Mail' }),
   columnHelper.accessor('phoneNumber', {
     header: 'Telefon',

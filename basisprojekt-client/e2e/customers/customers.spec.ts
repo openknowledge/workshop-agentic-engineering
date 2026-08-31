@@ -83,7 +83,7 @@ test('creates a new customer and deletes them again', async ({ page }) => {
   const uniqueEmail = `e2e.create.delete+${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
 
   await page.goto('/customers/new');
-  await page.getByLabel(/Vorname/).fill('E2E');
+  await page.getByLabel(/Vorname/).fill('E-to-E');
   await page.getByLabel(/Nachname/).fill('Tester');
   await page.getByLabel(/E-Mail/).fill(uniqueEmail);
   await page.getByRole('button', { name: 'Anlegen' }).click();
@@ -91,7 +91,7 @@ test('creates a new customer and deletes them again', async ({ page }) => {
   await expect(page).toHaveURL(/\/customers$/);
 
   await page.getByPlaceholder('Suchen...').fill(uniqueEmail);
-  const newRow = page.getByRole('row', { name: new RegExp(`E2E\\s+Tester`) });
+  const newRow = page.getByRole('row', { name: new RegExp(`E-to-E\\s+Tester`) });
   await expect(newRow).toBeVisible();
 
   page.once('dialog', (dialog) => dialog.accept());
@@ -106,7 +106,7 @@ test('prefills the edit form with the customer data', async ({ page }) => {
 
   await expect(page.getByLabel(/Vorname/)).toHaveValue('Erika');
   await expect(page.getByLabel(/Nachname/)).toHaveValue('Musterfrau');
-  await expect(page.getByLabel(/E-Mail/)).toHaveValue('erika.musterfrau@example.com');
+  await expect(page.getByLabel(/E-Mail/)).toHaveValue('erika.musterfrau@openknowledge.de');
   await expect(page.getByLabel(/Telefonnummer/)).toHaveValue('+49 987 6543210');
   await expect(page.getByLabel(/Geburtsdatum/)).toHaveValue('1985-11-23');
 });
@@ -200,11 +200,11 @@ test('sorts the table by first name and by email', async ({ page }) => {
   const emailHeader = page.getByRole('columnheader', { name: /E-Mail/ });
   await emailHeader.click();
   await expect(emailHeader).toContainText('▲');
-  await expect(page.locator('tbody tr').first()).toContainText('erika.musterfrau@example.com');
+  await expect(page.locator('tbody tr').first()).toContainText('erika.musterfrau@openknowledge.de');
 
   await emailHeader.click();
   await expect(emailHeader).toContainText('▼');
-  await expect(page.locator('tbody tr').first()).toContainText('max.mustermann@example.com');
+  await expect(page.locator('tbody tr').first()).toContainText('max.mustermann@openknowledge.de');
 });
 
 test('shows an error screen when loading the customer list fails', async ({ page }) => {

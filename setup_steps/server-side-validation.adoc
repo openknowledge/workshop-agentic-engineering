@@ -1,0 +1,111 @@
+= Serverseitige Validierung
+
+Die serverseitige Validierung erfüllt zwei Ziele.
+Erstens wollen wir bei Benutzereingaben sicherstellen, dass sie valide sind.
+Valide beinhaltet dabei nicht nur die fachliche Korrektheit,
+sondern auch die Einhaltung technischer Grenzen wie die Größen von Datenbankspalten.
+Für den Nutzerkomfort wollen wir diese Fehler
+außerdem sprechend an den Client kommunizieren.
+Wichtig ist, dass die Validierung von Nutzereingaben
+nicht nur dem Komfort des Benutzers dient, sondern auch ein Sicherheitsfeature ist.
+Überläufe und Injections können so verhindert werden.
+
+Das zweite Ziel ist die möglichst frühe Erkennung von Programmierfehlern.
+Um langfristig robuste und wartbare Systeme zu entwickeln, ist es essenziell,
+dass Programmier- und Modellierungsfehler zum frühestmöglichen Zeitpunkt erkannt werden.
+Ein zentraler Mechanismus dafür ist die konsequente Validierung innerhalb des Domänenmodells.
+Dazu gehören insbesondere Null-Checks auf allen erforderlichen Parametern,
+Prüfung von Wertebereichen (Ranges), z. B. Mindest- und Höchstwerte,
+Validierung von Zustandsübergängen innerhalb von Aggregates,
+Sicherstellung unveränderbarer (validierter) Objekte nach ihrer Erstellung (also im Konstruktor).
+
+Die Implementierung von Null-Checks, Wertebereichsprüfungen und weiteren Validierungen
+direkt im Domänenmodell erhöht die Robustheit der Gesamtarchitektur erheblich.
+Sie führt dazu, dass Fehler früh erkannt, schneller behoben
+und im Idealfall dauerhaft eliminiert werden.
+Das System verhält sich dadurch stabiler,
+konsistenter und sicherer – sowohl in der Entwicklung als auch im Betrieb.
+
+== Validierung von Nutzereingaben
+
+Die Validierung der Nutzereingaben erfolgt über Bean Validation.
+Damit diese greift, muss der Controller mit `@Validated` und die Parameter mit `@Valid` annotiert werden.
+Dann können die API-Objekte mit Bean-Validation-Annotations versehen,
+die dann automatisch ausgewertet werden.
+
+[%collapsible, title="CounterController.java"]
+====
+[source,java]
+----
+include::../basisprojekt-server/src/main/java/de/openknowledge/baseproject/counter/web/CounterController.java[tags=body-validation]
+----
+====
+Neben dem Body können auch alle anderen Request-Parameter (wie z.B. Path-Variablen) validiert werden:
+
+[%collapsible, title="CounterController.java"]
+====
+[source,java]
+----
+include::../basisprojekt-server/src/main/java/de/openknowledge/baseproject/counter/web/CounterController.java[tags=path-validation]
+----
+====
+
+Standardmäßig wird in Spring
+weder die entstehende `ConstraintViolationException` noch die entstehende `MethodArgumentNotValidException`
+so verarbeitet, dass eine sinnvolle Fehlermeldung zum Client zurückgeliefert wird.
+
+Um das zu erreichen, fügen wir dem Projekt einen ValidationExceptionHandler hinzu:
+link:../basisprojekt-server/src/main/java/de/openknowledge/baseproject/infrastructure/http/ValidationExceptionHandler.java[ValidationExceptionHandler.java]
+
+Standardmäßig werden die Fehlermeldungen dabei in der Systemsprache des Java-Prozesses ausgegeben.
+Um die Fehlermeldungen in der Sprache des Clients (über den Accept-Language-Header) zurückzugeben,
+kann in Spring folgende Einträge in die `application.properties` erfolgen.
+
+[source,java]
+----
+include::../basisprojekt-server/src/main/resources/application.properties[locale-resolver]
+----
+
+Allerdings wird damit immer noch die Systemsprache verwendet,
+falls keine Übersetzung für die Sprache aus dem Accept-Language-Header existiert.
+Um sicherzustellen, dass stattdessen die Default-Sprache von Spring MVC verwendet wird,
+müssen wir das Default-Locale des LocaleResolvers entsprechend setzen.
+Das kann über eine link:../basisprojekt-server/src/main/java/de/openknowledge/baseproject/infrastructure/http/LocaleConfig.java[LocaleConfig.java] geschehen.
+
+Der Bean Validation Standard hat einen entscheidenden Nachteil.
+Er ist im Default-Modus so konfiguriert, dass er bestehende Objektbäume validiert.
+Das steht im Konflikt zu unserem Ansatz, nur valide Objektbäume zu erzeugen.
+
+Bean Validation stellt hierfür zwar Constructor-Validation zur Verfügung.
+Diese wird aber standardmäßig nicht genutzt.
+Damit sie an der Schnittstelle zumindest für Records genutzt wird,
+verwenden wir einen eigenen link:../basisprojekt-server/src/main/java/de/openknowledge/baseproject/infrastructure/validation/RecordInstantiator.java[RecordInstantiator.java]
+für Jackson.
+
+Da Constructor-Validation standardmäßig die Fehlerpfade falsch setzt,
+werden diese während der Validierung noch korrigiert.
+Das geschieht im link:../basisprojekt-server/src/main/java/de/openknowledge/baseproject/infrastructure/validation/ValidatingDeserializer.java[ValidatingDeserializer.java],
+der dafür die weiteren Klassen aus dem Package `validation.constraint` verwendet.
+
+== Konstistentes Domänenmodell
+
+Wir modellieren Value Objects als Java Records. Diese sind standardmäßig immutable.
+Wir müssen also nur im Konstruktor sicherstellen, dass die übergebenen Parameter valide sind:
+
+[%collapsible, title="LastName.java"]
+====
+[source,java]
+----
+include::../basisprojekt-server/src/main/java/de/openknowledge/baseproject/customer/domain/LastName.java[tags=validation]
+----
+====
+
+In Entitäten und Aggregates muss das selbstverständlich auch in den Update-Methoden geprüft werden.
+
+[%collapsible, title="CustomerEntity.java"]
+====
+[source,java]
+----
+include::../basisprojekt-server/src/main/java/de/openknowledge/baseproject/customer/domain/CustomerEntity.java[tags=validation]
+----
+====

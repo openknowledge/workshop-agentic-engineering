@@ -23,4 +23,4 @@ Steps:
 . link:./setup_steps/monitoring.adoc[Monitoring einrichten]
 . link:./setup_steps/git-workflow.adoc[Git Workflow]
 . link:./setup_steps/external-client-wiremock.adoc[Externe Clients anbinden]
-
+. link:./setup_steps/server-side-validation.adoc[Serverseitige Validierung]

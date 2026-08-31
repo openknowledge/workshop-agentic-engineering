@@ -17,8 +17,10 @@ export function CustomerForm({
 }: CustomerFormProps) {
   const form = useForm({
     defaultValues: {
-      firstName: defaultValues?.firstName ?? '',
-      lastName: defaultValues?.lastName ?? '',
+      name: {
+        firstName: defaultValues?.name?.firstName ?? '',
+        lastName: defaultValues?.name?.lastName ?? '',
+      },
       email: defaultValues?.email ?? '',
       phoneNumber: defaultValues?.phoneNumber,
       birthDate: defaultValues?.birthDate,
@@ -40,11 +42,11 @@ export function CustomerForm({
       }}
       className="customer-form"
     >
-      <form.Field name="firstName">
+      <form.Field name="name.firstName">
         {(field) => <FormField field={field} label="Vorname" required />}
       </form.Field>
 
-      <form.Field name="lastName">
+      <form.Field name="name.lastName">
         {(field) => <FormField field={field} label="Nachname" required />}
       </form.Field>
 

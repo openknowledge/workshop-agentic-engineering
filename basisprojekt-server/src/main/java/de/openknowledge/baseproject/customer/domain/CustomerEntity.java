@@ -42,11 +42,11 @@ public class CustomerEntity {
 
     @Embedded
     @AttributeOverride(
-            name = "firstName.firstName",
+            name = "name.firstName.firstName",
             column =
                     @Column(name = "C_FIRST_NAME", length = FirstName.MAX_LENGTH, nullable = false))
     @AttributeOverride(
-            name = "lastName.lastName",
+            name = "name.lastName.lastName",
             column = @Column(name = "C_LAST_NAME", length = LastName.MAX_LENGTH, nullable = false))
     @AttributeOverride(
             name = "email.email",
@@ -76,7 +76,9 @@ public class CustomerEntity {
         return customer;
     }
 
+    // tag::validation[]
     public void update(Customer newCustomer) {
         customer = requireNonNull(newCustomer);
     }
+    // end::validation[]
 }
