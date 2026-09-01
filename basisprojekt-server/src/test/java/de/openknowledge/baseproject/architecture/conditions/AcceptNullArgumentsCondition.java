@@ -1,0 +1,67 @@
+/*
+ * Copyright (C) open knowledge GmbH.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package de.openknowledge.baseproject.architecture.conditions;
+
+import com.tngtech.archunit.core.domain.JavaConstructor;
+import com.tngtech.archunit.lang.ArchCondition;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+
+public class AcceptNullArgumentsCondition extends ArchCondition<JavaConstructor> {
+
+    public AcceptNullArgumentsCondition() {
+        super("accept null arguments");
+    }
+
+    public static ArchCondition<JavaConstructor> acceptNullArguments() {
+        return new AcceptNullArgumentsCondition();
+    }
+
+    @Override
+    public void check(JavaConstructor javaConstructor, ConditionEvents events) {
+        Constructor<?> constructor = javaConstructor.reflect();
+        Object[] arguments =
+                Arrays.stream(constructor.getParameterTypes())
+                        .map(AcceptNullArgumentsCondition::nullOrDefaultValue)
+                        .toArray();
+        try {
+            constructor.setAccessible(true);
+            constructor.newInstance(arguments);
+        } catch (InvocationTargetException e) {
+            events.add(
+                    SimpleConditionEvent.violated(
+                            javaConstructor,
+                            javaConstructor.getDescription()
+                                    + " throws "
+                                    + e.getCause()
+                                    + " when called with null arguments"));
+        } catch (ReflectiveOperationException e) {
+            events.add(
+                    SimpleConditionEvent.violated(
+                            javaConstructor,
+                            javaConstructor.getDescription() + " could not be invoked: " + e));
+        }
+    }
+
+    private static Object nullOrDefaultValue(Class<?> type) {
+        // primitives cannot be null, so they get their default value instead
+        return type.isPrimitive() ? Array.get(Array.newInstance(type, 1), 0) : null;
+    }
+}

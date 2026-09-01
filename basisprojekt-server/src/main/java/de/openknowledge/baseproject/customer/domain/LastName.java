@@ -15,8 +15,6 @@
  */
 package de.openknowledge.baseproject.customer.domain;
 
-import static de.openknowledge.baseproject.infrastructure.validation.Validate.validate;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
@@ -33,9 +31,5 @@ public record LastName(
                 String lastName) {
 
     public static final int MAX_LENGTH = 255;
-
-    public LastName {
-        validate(LastName.class, lastName);
-    }
 }
-// end:validation
+// end::validation

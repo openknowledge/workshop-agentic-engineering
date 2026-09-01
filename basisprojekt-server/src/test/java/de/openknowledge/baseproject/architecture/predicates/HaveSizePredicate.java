@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.openknowledge.baseproject.infrastructure.validation.constraint;
+package de.openknowledge.baseproject.architecture.predicates;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Path;
+import com.tngtech.archunit.base.DescribedPredicate;
+import java.util.List;
 
-public class FixedPathConstraintViolation<T> extends ConstraintViolationDelegate<T> {
+public class HaveSizePredicate<T> extends DescribedPredicate<List<T>> {
 
-    private final Path propertyPath;
+    private final int size;
 
-    public FixedPathConstraintViolation(Path path, ConstraintViolation<T> violation) {
-        super(violation);
-        this.propertyPath = path;
+    public HaveSizePredicate(int size) {
+        super("have size " + size);
+        this.size = size;
+    }
+
+    public static <T> DescribedPredicate<List<T>> haveSize(int size) {
+        return new HaveSizePredicate<T>(size);
     }
 
     @Override
-    public Path getPropertyPath() {
-        return propertyPath;
+    public boolean test(List<T> parameters) {
+        return parameters.size() == size;
     }
 }

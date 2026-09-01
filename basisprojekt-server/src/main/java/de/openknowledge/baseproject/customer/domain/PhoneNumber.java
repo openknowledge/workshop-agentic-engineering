@@ -15,8 +15,6 @@
  */
 package de.openknowledge.baseproject.customer.domain;
 
-import static de.openknowledge.baseproject.infrastructure.validation.Validate.validate;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.Pattern;
@@ -30,8 +28,4 @@ public record PhoneNumber(
                 String phoneNumber) {
 
     public static final int MAX_LENGTH = 50;
-
-    public PhoneNumber {
-        validate(PhoneNumber.class, phoneNumber);
-    }
 }

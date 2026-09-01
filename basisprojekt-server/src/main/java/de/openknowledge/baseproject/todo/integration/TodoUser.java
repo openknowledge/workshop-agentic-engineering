@@ -15,8 +15,15 @@
  */
 package de.openknowledge.baseproject.todo.integration;
 
+import static de.openknowledge.baseproject.infrastructure.validation.Validate.validate;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import de.openknowledge.baseproject.customer.domain.Email;
+import jakarta.validation.Valid;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record TodoUser(ExternalUserId id, DisplayName name, Email email) {}
+public record TodoUser(@Valid ExternalUserId id, @Valid DisplayName name, @Valid UserEmail email) {
+
+    public static TodoUser newTodoUser(ExternalUserId id, DisplayName name, UserEmail email) {
+        return validate(new TodoUser(id, name, email));
+    }
+}

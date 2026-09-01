@@ -13,6 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.openknowledge.baseproject.architecture;
+package de.openknowledge.baseproject.architecture.grammar;
 
-class ValidationArchitectureTest {}
+public class ArchUnitGrammarBlocks {
+
+    public static <T> T classesThat(T t) {
+        return t;
+    }
+
+    public static <T> T methodsThat(T t) {
+        return t;
+    }
+
+    public static <T> T that(T t) {
+        return t;
+    }
+
+    public static <T> T where(T t) {
+        return t;
+    }
+
+    public static <T> T are(T t) {
+        return t;
+    }
+
+    public static <T> T have(T t) {
+        return t;
+    }
+}

@@ -15,9 +15,16 @@
  */
 package de.openknowledge.baseproject.todo.integration;
 
+import static de.openknowledge.baseproject.infrastructure.validation.Validate.validate;
+
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
 
 @Embeddable
-public record DisplayName(@JsonValue @NotBlank String firstName) {}
+public record DisplayName(@JsonValue @NotBlank String firstName) {
+
+    public static DisplayName newDisplayName(String firstName) {
+        return validate(new DisplayName(firstName));
+    }
+}

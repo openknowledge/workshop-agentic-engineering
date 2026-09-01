@@ -17,11 +17,17 @@ package de.openknowledge.baseproject.customer.web;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import de.openknowledge.baseproject.customer.domain.Customer;
+import de.openknowledge.baseproject.infrastructure.validation.Validate;
+import jakarta.validation.Valid;
 import java.net.URI;
 
-public record CustomerOverview(UriReference self, @JsonUnwrapped Customer customer) {
+public record CustomerOverview(@Valid UriReference self, @JsonUnwrapped @Valid Customer customer) {
 
-    public static CustomerOverview of(URI self, Customer customer) {
-        return new CustomerOverview(new UriReference(self), customer);
+    public static CustomerOverview newCustomerOverview(URI self, Customer customer) {
+        return newCustomerOverview(new UriReference(self), customer);
+    }
+
+    public static CustomerOverview newCustomerOverview(UriReference self, Customer customer) {
+        return Validate.validate(new CustomerOverview(self, customer));
     }
 }

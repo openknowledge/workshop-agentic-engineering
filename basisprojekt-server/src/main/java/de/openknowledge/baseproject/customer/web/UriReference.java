@@ -15,6 +15,7 @@
  */
 package de.openknowledge.baseproject.customer.web;
 
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 
-public record UriReference(URI href) {}
+public record UriReference(@NotNull URI href) {}

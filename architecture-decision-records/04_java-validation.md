@@ -1,7 +1,7 @@
 # ADR: Validierung im Java-Backend
 
-* Status: proposed
-* Deciders:
+* Status: accepted (11.09.2026)
+* Deciders: Sören Dierkes, Arne Limburg, Gabriel Winkler
 * Date: 21.08.2026
 
 ## Kontext und Problembeschreibung
@@ -59,7 +59,7 @@ Für die REST-Schnittstellen wird zusätzlich ein separates API-Modell (z. B. Re
 Die Validierung erfolgt zweistufig:
 - Bean Validation wird zur deklarativen Validierung an Records eingesetzt, insbesondere zur Unterstützung der REST-Schnittstellen und zur Aggregation von Fehlermeldungen.
 - Zusätzlich wird im Konstruktor der Records explizite Validierung durchgeführt, um ungültige Zustände im Domänenmodell zu verhindern und Fehler frühzeitig zu erkennen.
-- Um die Constructor-Validierung bei der Deserialisierung von JSON zu ermöglichen, ist eigener Infrastruktur-Code für das Mapping von JSON nach Java Records erforderlich. Dieser Code existiert bereits und wurde von open knowledge mehrfach in Kundenprojekten verwendet. Er müsste allerdings vom Projekt-Team gewartet werden.
+- Um die Constructor-Validierung bei der Deserialisierung von JSON zu ermöglichen, ist eigener Infrastruktur-Code für das Mapping von JSON nach Java Records erforderlich (z. B. ein eigener Record-Instantiator und Deserializer für Jackson, der auch die Fehlerpfade der Constructor-Validierung korrigiert). Dieser Code müsste vom Projekt-Team gewartet werden.
 
 #### Vorteile
 
@@ -72,6 +72,30 @@ Die Validierung erfolgt zweistufig:
 
 - Zusätzliche Komplexität durch eigene Logik in der Deserialisierung
 - Höherer initialer Implementierungs- und Wartungsaufwand
+- Das Framework (Jackson, Hibernate, Spring) erzeugt Records über den Konstruktor, sodass Constructor-Validierung und Bean Validation um dieselben Fehler konkurrieren
+
+### Option 4: Bean Validation nach der Konstruktion, Factory-Methoden für Code-erzeugte Objekte
+
+Die Validierungsregeln werden ausschließlich per Bean Validation an den Records definiert und immer nach der Konstruktion ausgewertet:
+- Der kanonische Konstruktor enthält keine Validierung. Erlaubt ist nur Normalisierung (z. B. `trim()`). Der Konstruktor muss null-sicher sein, da die Parameter zu diesem Zeitpunkt noch invalide sein können.
+- Records, die von Frameworks erzeugt werden (JSON-Body, Request-Parameter, JPA), werden anschließend über `@Valid` am Controller-Parameter (bzw. an Record-Komponenten) validiert. Dafür sind die Controller mit `@Validated` annotiert.
+- Records, die im Code erzeugt werden, werden über eine statische Factory-Methode `new<RecordName>` erzeugt, die das Ergebnis sofort über `Validate.validate(...)` validiert und bei Fehlern eine `IllegalArgumentException` wirft.
+- Für Path-Variablen besitzt das Value Object einen zusätzlichen Konstruktor mit einem `String`-Parameter, den Spring zur Konvertierung nutzt. Es ist kein eigener `Converter` nötig.
+- Die Einhaltung dieser Regeln wird durch ArchUnit-Tests (`ValueObjectTest`) sichergestellt.
+
+#### Vorteile
+
+- Kein eigener Infrastruktur-Code für die Deserialisierung von Records
+- Aggregierte und strukturierte Fehlermeldungen für REST-Clients über einen zentralen `ValidationExceptionHandler`
+- Die Validierungsregeln stehen an genau einer Stelle (Bean Validation) und werden auch für die OpenAPI-Spezifikation genutzt
+- Im Code erzeugte Objekte werden sofort validiert, Stacktraces zeigen auf die erzeugende Stelle
+- Kein separates API-Modell nötig
+
+#### Nachteile
+
+- Records, die von Frameworks erzeugt werden, sind zwischen Konstruktion und `@Valid` kurzzeitig potenziell invalide
+- Die Konvention "Konstruktor nicht direkt aufrufen" ist nicht durch die Sprache erzwungen und muss durch Architekturtests abgesichert werden
+- Der Konstruktor muss mit ungültigen Werten (z. B. `null`) umgehen können
 
 ## Entscheidungstreiber
 
@@ -80,6 +104,16 @@ Die Entscheidung wurde insbesondere durch folgende Aspekte beeinflusst:
 - *Nachvollziehbarkeit im Fehlerfall:* Stacktraces müssen eindeutig auf die fachlich relevante Stelle im Code verweisen.
 - *Qualität der REST-Fehlermeldungen:* Validierungsfehler sollen gesammelt und strukturiert an Clients zurückgegeben werden können.
 - *Stabilität des Domänenmodells:* Das Domänenmodell soll keine ungültigen Zustände repräsentieren können.
+
+## Entscheidung
+
+Wir entscheiden uns für Option 4.
+
+Die Constructor-Validierung aus Option 3 hat sich nicht bewährt: Sie erfordert eigenen Infrastruktur-Code für Jackson
+und steht im Konflikt damit, dass Frameworks Records über den Konstruktor erzeugen und die Validierung dort
+ohnehin nachträglich per Bean Validation erfolgt. Die Früherkennung von Fehlern in Code-erzeugten Objekten
+erreichen wir stattdessen durch die Factory-Methoden `new<RecordName>`, die sofort validieren.
+Die wesentlichen Regeln sind in der Dokumentation `setup_steps/server-side-validation.adoc` beschrieben.
 
 ## Out of Scope
 

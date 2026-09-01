@@ -15,11 +15,18 @@
  */
 package de.openknowledge.baseproject.customer.domain;
 
+import static de.openknowledge.baseproject.todo.integration.CompletionState.newCompletionState;
+import static de.openknowledge.baseproject.todo.integration.DisplayName.newDisplayName;
+import static de.openknowledge.baseproject.todo.integration.Title.newTitle;
+import static de.openknowledge.baseproject.todo.integration.Todo.newTodo;
+import static de.openknowledge.baseproject.todo.integration.TodoUser.newTodoUser;
+import static de.openknowledge.baseproject.todo.integration.UserEmail.newUserEmail;
+
 import de.openknowledge.baseproject.todo.integration.DisplayName;
 import de.openknowledge.baseproject.todo.integration.Title;
-import de.openknowledge.baseproject.todo.integration.Todo;
 import de.openknowledge.baseproject.todo.integration.TodoRepository;
 import de.openknowledge.baseproject.todo.integration.TodoUser;
+import de.openknowledge.baseproject.todo.integration.UserEmail;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -31,7 +38,7 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class CustomerService {
 
-    private static final Title WELCOME_TODO_TITLE = new Title("Send welcome email");
+    private static final Title WELCOME_TODO_TITLE = newTitle("Send welcome email");
 
     @Autowired private CustomerRepository repository;
 
@@ -41,8 +48,8 @@ public class CustomerService {
         return repository.findAll();
     }
 
-    public Optional<CustomerEntity> findCustomer(Long id) {
-        return repository.findById(id);
+    public Optional<CustomerEntity> findCustomer(CustomerId id) {
+        return repository.findByCustomerId(id);
     }
 
     public CustomerEntity registerCustomer(Customer customer) {
@@ -53,7 +60,8 @@ public class CustomerService {
                             throw new IllegalArgumentException("Email already in use");
                         });
         TodoUser externalUser = lookupOrCreateExternalUser(customer);
-        todoRepository.createTodo(new Todo(externalUser.id(), WELCOME_TODO_TITLE, false));
+        todoRepository.createTodo(
+                newTodo(externalUser.id(), WELCOME_TODO_TITLE, newCompletionState(false)));
         Customer updated = customer.withExternalUserId(externalUser.id());
         return repository.save(new CustomerEntity(updated));
     }
@@ -61,7 +69,7 @@ public class CustomerService {
     // Intentional full overwrite, including externalUserId: the client is responsible for
     // round-tripping fields it doesn't edit itself. Do not reintroduce a server-side preserve
     // call for externalUserId here; that would silently break the client's generic merge.
-    public void updateCustomer(Long id, Customer customer) {
+    public void updateCustomer(CustomerId id, Customer customer) {
         repository
                 .findByCustomerEmail(customer.email())
                 .filter(existing -> !existing.getId().equals(id))
@@ -70,7 +78,7 @@ public class CustomerService {
                             throw new IllegalArgumentException("Email already in use");
                         });
         repository
-                .findById(id)
+                .findByCustomerId(id)
                 .ifPresentOrElse(
                         entity -> entity.update(customer),
                         () -> {
@@ -78,9 +86,9 @@ public class CustomerService {
                         });
     }
 
-    public void deleteCustomer(Long id) {
+    public void deleteCustomer(CustomerId id) {
         repository
-                .findById(id)
+                .findByCustomerId(id)
                 .ifPresentOrElse(
                         repository::delete,
                         () -> {
@@ -89,19 +97,17 @@ public class CustomerService {
     }
 
     private TodoUser lookupOrCreateExternalUser(Customer customer) {
+        UserEmail email = newUserEmail(customer.email().email());
         return todoRepository
-                .findUserByEmail(customer.email())
+                .findUserByEmail(email)
                 .orElseGet(
                         () ->
                                 todoRepository.createUser(
-                                        new TodoUser(
-                                                null,
-                                                buildDisplayName(customer),
-                                                customer.email())));
+                                        newTodoUser(null, buildDisplayName(customer), email)));
     }
 
     private DisplayName buildDisplayName(Customer customer) {
         Name name = customer.name();
-        return new DisplayName(name.firstName().firstName() + " " + name.lastName().lastName());
+        return newDisplayName(name.firstName().firstName() + " " + name.lastName().lastName());
     }
 }

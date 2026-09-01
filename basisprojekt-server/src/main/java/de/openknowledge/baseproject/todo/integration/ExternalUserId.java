@@ -17,6 +17,7 @@ package de.openknowledge.baseproject.todo.integration;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.NotNull;
 
 @Embeddable
-public record ExternalUserId(@JsonValue Long externalUserId) {}
+public record ExternalUserId(@NotNull @JsonValue Long externalUserId) {}
