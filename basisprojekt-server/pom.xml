@@ -139,6 +139,7 @@
                 <artifactId>spotless-maven-plugin</artifactId>
                 <version>2.46.1</version>
                 <configuration>
+                    <lineEndings>UNIX</lineEndings>
                     <licenseHeader>
                         <file>${project.basedir}/src/main/checkstyle/java.header.plain</file>
                     </licenseHeader>
