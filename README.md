@@ -79,14 +79,22 @@ On Windows, the executable is located at `node\opencode.cmd` instead:
 
 Within opencode, an AI provider can be selected and configured via `/connect`.
 
-## Exercise: Feature Prompting with /grill-me
+## Exercise: Agentic Workflow with the Orchestrator
 
-In this exercise, you will try out how a prepared command such as `/grill-me` can help with planning and implementing a feature.
+In this exercise, you will try out how a multi-agent workflow implements a feature end to end based on a spec.
+
+The `orchestrator` agent is configured as the default agent (see `opencode.json`). It does not write any code itself, but delegates each phase to specialized subagents (see `.opencode/agents/`):
+
+- `ux-designer` – derives the functional requirements and acceptance scenarios from the spec and later reviews the implemented tests.
+- `frontend-dev` – implements click-dummy tests and pages first, then the real UI and the end-to-end tests.
+- `backend-dev` – designs and implements the REST API test-driven.
+- `review` – checks backend, frontend and tests for consistency.
 
 ### The Task
 
-**New feature**:
-> Each customer should get a list of addresses.
+**New feature**: The spec [`docs/specs/customer-addresses.md`](docs/specs/customer-addresses.md) describes customer addresses as a sub-resource of the customer.
 
-1. **Try out `/grill-me`**: Use the `/grill-me` command to prepare and implement the new feature together with the AI.
-2. **Review the result**: Review what the AI has implemented and how the implementation differs from the previous, naive prompting.
+1. **Read the spec**: Get an overview of the feature and the decisions in the spec.
+2. **Start the workflow**: Start opencode and ask the orchestrator to implement the spec, e.g. `Implement docs/specs/customer-addresses.md`.
+3. **Follow the phases**: Observe how the orchestrator delegates the phases to the subagents and how they work in their own sessions.
+4. **Review the result**: Review what the agents have implemented and how the result differs from the previous exercises.
