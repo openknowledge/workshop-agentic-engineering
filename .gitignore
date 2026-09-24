@@ -5,9 +5,10 @@
 !.dockerignore
 !.mvn
 !.agents
-!.junie
 !.devcontainer
 !.prettierrc
 !.prettierignore
+!.opencode
 */target/
 */node/
+!.opencode/commands/

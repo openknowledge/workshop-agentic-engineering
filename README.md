@@ -78,3 +78,15 @@ On Windows, the executable is located at `node\opencode.cmd` instead:
 ```
 
 Within opencode, an AI provider can be selected and configured via `/connect`.
+
+## Exercise: Feature Prompting with /grill-me
+
+In this exercise, you will try out how a prepared command such as `/grill-me` can help with planning and implementing a feature.
+
+### The Task
+
+**New feature**:
+> Each customer should get a list of addresses.
+
+1. **Try out `/grill-me`**: Use the `/grill-me` command to prepare and implement the new feature together with the AI.
+2. **Review the result**: Review what the AI has implemented and how the implementation differs from the previous, naive prompting.
