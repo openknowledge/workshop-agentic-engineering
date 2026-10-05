@@ -42,7 +42,7 @@ services:
       - ./configs/opentelemetry-collector-config.yaml:/etc/otel-collector-config.yaml:ro
 
   auth-proxy:
-    image: nginx:alpine
+    image: nginx:1.27-alpine
     depends_on:
       basisprojekt-server:
         condition: service_started
