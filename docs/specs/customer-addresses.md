@@ -119,7 +119,7 @@ Existing customers without addresses remain readable and deletable; the required
   - `c_type VARCHAR(32)` nullable, `c_street VARCHAR(255)`, `c_house_number VARCHAR(16)`, `c_address_addition VARCHAR(255)` nullable, `c_zip_code VARCHAR(10)`, `c_city VARCHAR(255)`, `c_country VARCHAR(2)`
   - naming conventions `pk_`/`fk_` as in V1.2.0
 - No minimum-count or uniqueness constraints in the database; no data migration for existing customers.
-- Column lengths match `MAX_LENGTH`/`@Size` exactly, so that `OpenApiConstraintArchitectureTest` stays green.
+- Column lengths match `MAX_LENGTH`/`@Size` exactly, so that `OpenApiConstraintTest` stays green.
 - The test data gets one billing and one delivery address for each of the two test customers (Max Mustermann, Erika Musterfrau).
 
 ### API contract
@@ -240,7 +240,7 @@ Existing customers without addresses remain readable and deletable; the required
 - Customer JSON and customer overview contain no addresses; existing customer tests remain unchanged.
 - Existing customer without addresses is readable and deletable.
 - Deleting a customer removes its addresses (no FK error, address list afterwards returns `404`).
-- `OpenApiConstraintArchitectureTest` stays green unchanged.
+- `OpenApiConstraintTest` stays green unchanged.
 
 ### Client (prior art: existing form and FormField tests with Vitest globals, `userEvent`, label-based queries)
 
