@@ -111,6 +111,46 @@ test('prefills the edit form with the customer data', async ({ page }) => {
   await expect(page.getByLabel(/Geburtsdatum/)).toHaveValue('1985-11-23');
 });
 
+test('preserves fields the form does not know when saving', async ({ page }) => {
+  const customerResource = {
+    name: { firstName: 'Erika', lastName: 'Musterfrau' },
+    email: 'erika.musterfrau@openknowledge.de',
+    phoneNumber: '+49 987 6543210',
+    birthDate: '1985-11-23',
+    additionalEmails: ['erika.privat@example.com'],
+    additionalPhoneNumbers: [{ type: 'MOBILE', phoneNumber: '+49 171 1234567' }],
+    externalUserId: 42,
+    futureField: 'keep-me',
+  };
+  let putBody: Record<string, unknown> | undefined;
+
+  await page.route('**/api/customers/*', (route) => {
+    if (route.request().method() === 'GET') {
+      return route.fulfill({ json: customerResource });
+    }
+    if (route.request().method() === 'PUT') {
+      putBody = route.request().postDataJSON();
+      return route.fulfill({ status: 200 });
+    }
+    return route.fallback();
+  });
+
+  await page.goto('/customers/1');
+  const firstNameInput = page.getByLabel(/Vorname/);
+  await firstNameInput.clear();
+  await firstNameInput.fill('Erika-Updated');
+  await page.getByRole('button', { name: 'Speichern' }).click();
+
+  await expect(page).toHaveURL('/customers');
+  expect(putBody).toMatchObject({
+    name: { firstName: 'Erika-Updated', lastName: 'Musterfrau' },
+    additionalEmails: ['erika.privat@example.com'],
+    additionalPhoneNumbers: [{ type: 'MOBILE', phoneNumber: '+49 171 1234567' }],
+    externalUserId: 42,
+    futureField: 'keep-me',
+  });
+});
+
 test('shows an error message when saving fails', async ({ page }) => {
   await page.goto('/customers');
   await page.getByRole('link', { name: 'Bearbeiten' }).first().click();

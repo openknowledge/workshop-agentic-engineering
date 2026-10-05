@@ -425,7 +425,7 @@ class CustomerControllerTest {
                         .contentType(APPLICATION_JSON)
                         .body(
                                 """
-                                {"name":{"firstName":"After","lastName":"Update"},"email":"update-test@example.com"}
+                                {"name":{"firstName":"After","lastName":"Update"},"email":"update-test@example.com","externalUserId":11}
                                 """)
                         .retrieve()
                         .toBodilessEntity();
@@ -441,6 +441,102 @@ class CustomerControllerTest {
         Map<String, Object> updatedName = (Map<String, Object>) updated.get("name");
         assertThat(updatedName.get("firstName")).isEqualTo("After");
         assertThat(updated.get("externalUserId")).isEqualTo(11);
+    }
+
+    @Test
+    void updateCustomerKeepsAllFieldsWhenCompleteBodyIsSent() throws Exception {
+        // Given
+        RestClient client = clientBuilder.build();
+        URI location = createCustomerWithAdditionalContacts(client, "round-trip@example.com");
+
+        // When
+        var updateResponse =
+                client.put()
+                        .uri(location)
+                        .contentType(APPLICATION_JSON)
+                        .body(
+                                """
+                                {
+                                    "name": {"firstName": "After", "lastName": "RoundTrip"},
+                                    "email": "round-trip@example.com",
+                                    "additionalEmails": ["extra@example.com"],
+                                    "additionalPhoneNumbers": [
+                                        {"type": "PRIVATE", "phoneNumber": "+49157123456"}
+                                    ],
+                                    "externalUserId": 11
+                                }
+                                """)
+                        .retrieve()
+                        .toBodilessEntity();
+        assertTrue(updateResponse.getStatusCode().is2xxSuccessful(), "Update successful");
+
+        // Then
+        Map<String, Object> updated =
+                client.get()
+                        .uri(location)
+                        .accept(APPLICATION_JSON)
+                        .retrieve()
+                        .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+        Map<String, Object> updatedName = (Map<String, Object>) updated.get("name");
+        assertThat(updatedName.get("firstName")).isEqualTo("After");
+        assertThat((List<String>) updated.get("additionalEmails"))
+                .containsExactly("extra@example.com");
+        assertThat((List<Map<String, Object>>) updated.get("additionalPhoneNumbers"))
+                .containsExactly(Map.of("type", "PRIVATE", "phoneNumber", "+49157123456"));
+        assertThat(updated.get("externalUserId")).isEqualTo(11);
+    }
+
+    @Test
+    void updateCustomerClearsOmittedFields() throws Exception {
+        // Given
+        RestClient client = clientBuilder.build();
+        URI location = createCustomerWithAdditionalContacts(client, "clear-test@example.com");
+
+        // When
+        var updateResponse =
+                client.put()
+                        .uri(location)
+                        .contentType(APPLICATION_JSON)
+                        .body(
+                                """
+                                {"name":{"firstName":"After","lastName":"Clear"},"email":"clear-test@example.com"}
+                                """)
+                        .retrieve()
+                        .toBodilessEntity();
+        assertTrue(updateResponse.getStatusCode().is2xxSuccessful(), "Update successful");
+
+        // Then
+        Map<String, Object> updated =
+                client.get()
+                        .uri(location)
+                        .accept(APPLICATION_JSON)
+                        .retrieve()
+                        .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+        assertThat((List<String>) updated.get("additionalEmails")).isEmpty();
+        assertThat((List<Map<String, Object>>) updated.get("additionalPhoneNumbers")).isEmpty();
+        assertThat(updated.get("externalUserId")).isNull();
+    }
+
+    private URI createCustomerWithAdditionalContacts(RestClient client, String email) {
+        var createResponse =
+                client.post()
+                        .uri("/customers")
+                        .contentType(APPLICATION_JSON)
+                        .body(
+                                """
+                                {
+                                    "name": {"firstName": "Before", "lastName": "RoundTrip"},
+                                    "email": "%s",
+                                    "additionalEmails": ["extra@example.com"],
+                                    "additionalPhoneNumbers": [
+                                        {"type": "PRIVATE", "phoneNumber": "+49157123456"}
+                                    ]
+                                }
+                                """
+                                        .formatted(email))
+                        .retrieve()
+                        .toBodilessEntity();
+        return createResponse.getHeaders().getLocation();
     }
 
     @Test

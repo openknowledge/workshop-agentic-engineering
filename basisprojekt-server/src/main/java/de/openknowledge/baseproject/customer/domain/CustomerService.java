@@ -16,7 +16,6 @@
 package de.openknowledge.baseproject.customer.domain;
 
 import de.openknowledge.baseproject.todo.integration.DisplayName;
-import de.openknowledge.baseproject.todo.integration.ExternalUserId;
 import de.openknowledge.baseproject.todo.integration.Title;
 import de.openknowledge.baseproject.todo.integration.Todo;
 import de.openknowledge.baseproject.todo.integration.TodoRepository;
@@ -59,6 +58,9 @@ public class CustomerService {
         return repository.save(new CustomerEntity(updated));
     }
 
+    // Intentional full overwrite, including externalUserId: the client is responsible for
+    // round-tripping fields it doesn't edit itself. Do not reintroduce a server-side preserve
+    // call for externalUserId here; that would silently break the client's generic merge.
     public void updateCustomer(Long id, Customer customer) {
         repository
                 .findByCustomerEmail(customer.email())
@@ -70,10 +72,7 @@ public class CustomerService {
         repository
                 .findById(id)
                 .ifPresentOrElse(
-                        entity -> {
-                            ExternalUserId preserved = entity.getCustomer().externalUserId();
-                            entity.update(customer.withExternalUserId(preserved));
-                        },
+                        entity -> entity.update(customer),
                         () -> {
                             throw new EntityNotFoundException();
                         });

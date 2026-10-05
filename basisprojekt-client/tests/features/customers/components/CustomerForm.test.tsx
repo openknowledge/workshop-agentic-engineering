@@ -22,3 +22,38 @@ test('show pending state and deactivates button on submission', () => {
   const button = screen.getByRole('button', { name: 'Wird gespeichert...' });
   expect(button).toBeDisabled();
 });
+
+async function fillRequiredFields(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText(/Vorname/), 'Max');
+  await user.type(screen.getByLabelText(/Nachname/), 'Mustermann');
+  await user.type(screen.getByLabelText(/E-Mail/), 'max@example.com');
+}
+
+test('emits null for cleared optional fields', async () => {
+  const user = userEvent.setup();
+  const onSubmit = vi.fn();
+  render(<CustomerForm onSubmit={onSubmit} isPending={false} submitLabel="Speichern" />);
+
+  await fillRequiredFields(user);
+  await user.click(screen.getByRole('button', { name: 'Speichern' }));
+
+  expect(onSubmit).toHaveBeenCalledWith(
+    expect.objectContaining({ phoneNumber: null, birthDate: null })
+  );
+});
+
+test('emits exactly the known form fields', async () => {
+  const user = userEvent.setup();
+  const onSubmit = vi.fn();
+  render(<CustomerForm onSubmit={onSubmit} isPending={false} submitLabel="Speichern" />);
+
+  await fillRequiredFields(user);
+  await user.click(screen.getByRole('button', { name: 'Speichern' }));
+
+  expect(Object.keys(onSubmit.mock.calls[0][0]).sort()).toEqual([
+    'birthDate',
+    'email',
+    'name',
+    'phoneNumber',
+  ]);
+});

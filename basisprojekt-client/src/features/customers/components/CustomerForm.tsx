@@ -26,7 +26,11 @@ export function CustomerForm({
       birthDate: defaultValues?.birthDate,
     },
     onSubmit: async ({ value }) => {
-      onSubmit(value);
+      onSubmit({
+        ...value,
+        phoneNumber: value.phoneNumber?.trim() ? value.phoneNumber : null,
+        birthDate: value.birthDate ? value.birthDate : null,
+      });
     },
     validators: {
       onChange: customerSchema,

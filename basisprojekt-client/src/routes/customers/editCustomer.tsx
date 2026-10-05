@@ -39,10 +39,13 @@ export function EditCustomerPage() {
         defaultValues={customer}
         onSubmit={(data) => {
           setError(null);
-          updateMutation.mutate(data, {
-            onSuccess: () => navigate({ to: '/customers' }),
-            onError: (err) => setError(err.message),
-          });
+          updateMutation.mutate(
+            { ...customer, ...data },
+            {
+              onSuccess: () => navigate({ to: '/customers' }),
+              onError: (err) => setError(err.message),
+            }
+          );
         }}
         isPending={updateMutation.isPending}
         submitLabel="Speichern"
