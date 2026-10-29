@@ -1,11 +1,11 @@
 services:
   basisprojekt-database:
-    image: postgres:17
+    image: postgres:18
     environment:
       POSTGRES_PASSWORD: ${APP_PG_PASSWORD}
 
   flyway:
-    image: flyway/flyway:10.22
+    image: flyway/flyway:13.10
     command: migrate -locations=filesystem:/flyway/sql,filesystem:/flyway/testdata -user=postgres -password=${APP_PG_PASSWORD} -connectRetries=60 -url=jdbc:postgresql://basisprojekt-database:5432/postgres
     depends_on:
       basisprojekt-database:

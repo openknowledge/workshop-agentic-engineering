@@ -35,6 +35,19 @@ export default defineConfig({
       : []),
   ],
   // end::istanbul-plugin[]
+  build: {
+    sourcemap: process.env.VITE_COVERAGE ? 'hidden' : false,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+            { name: 'tanstack', test: /node_modules[\\/]@tanstack[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
   // tag::vitest-config[]
   test: {
     globals: true,

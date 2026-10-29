@@ -1,19 +1,37 @@
 import { useState } from 'react';
 import {
+  columnFilteringFeature,
   createColumnHelper,
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  flexRender,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
+  filterFn_includesString,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
   type SortingState,
 } from '@tanstack/react-table';
 import { Link } from '@tanstack/react-router';
 import type { CustomerOverview } from '../../../domain/CustomerOverview';
 import { useDeleteCustomer } from '../api/customerQueries';
 
-const columnHelper = createColumnHelper<CustomerOverview>();
+const features = tableFeatures({
+  columnFilteringFeature,
+  globalFilteringFeature,
+  rowSortingFeature,
+  rowPaginationFeature,
+  filteredRowModel: createFilteredRowModel(),
+  sortedRowModel: createSortedRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+  filterFns: { includesString: filterFn_includesString },
+  sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text },
+});
+
+const columnHelper = createColumnHelper<typeof features, CustomerOverview>();
 
 function ActionButtons({ customerId }: { customerId: string }) {
   const deleteMutation = useDeleteCustomer();
@@ -41,7 +59,7 @@ function ActionButtons({ customerId }: { customerId: string }) {
   );
 }
 
-const columns = [
+const columns = columnHelper.columns([
   columnHelper.accessor('name.firstName', { id: 'firstName', header: 'Vorname' }),
   columnHelper.accessor('name.lastName', { id: 'lastName', header: 'Nachname' }),
   columnHelper.accessor('email', { header: 'E-Mail' }),
@@ -61,7 +79,7 @@ const columns = [
       return <ActionButtons customerId={customerId} />;
     },
   }),
-];
+]);
 
 interface CustomerTableProps {
   customers: CustomerOverview[];
@@ -71,7 +89,8 @@ export function CustomerTable({ customers }: CustomerTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
 
-  const table = useReactTable({
+  const table = useTable({
+    features,
     data: customers,
     columns,
     state: {
@@ -80,10 +99,6 @@ export function CustomerTable({ customers }: CustomerTableProps) {
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
@@ -107,7 +122,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
                   onClick={header.column.getToggleSortingHandler()}
                   className={header.column.getCanSort() ? 'sortable' : ''}
                 >
-                  {flexRender(header.column.columnDef.header, header.getContext())}
+                  <table.FlexRender header={header} />
                   {header.column.getIsSorted() === 'asc' ? ' ▲' : ''}
                   {header.column.getIsSorted() === 'desc' ? ' ▼' : ''}
                 </th>
@@ -125,8 +140,10 @@ export function CustomerTable({ customers }: CustomerTableProps) {
           ) : (
             table.getRowModel().rows.map((row) => (
               <tr key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                {row.getAllCells().map((cell) => (
+                  <td key={cell.id}>
+                    <table.FlexRender cell={cell} />
+                  </td>
                 ))}
               </tr>
             ))
@@ -143,7 +160,7 @@ export function CustomerTable({ customers }: CustomerTableProps) {
           Zurück
         </button>
         <span>
-          Seite {table.getState().pagination.pageIndex + 1} von {table.getPageCount()}
+          Seite {table.state.pagination.pageIndex + 1} von {table.getPageCount()}
         </span>
         <button type="button" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
           Weiter
