@@ -21,9 +21,9 @@
 
   "customManagers": [
     {
-      "description": "Track Node.js version pinned in frontend-maven-plugin (basisprojekt-client/pom.xml)",
+      "description": "Track Node.js version pinned in frontend-maven-plugin (customer-management-client/pom.xml)",
       "customType": "regex",
-      "managerFilePatterns": ["basisprojekt-client/pom\\.xml"],
+      "managerFilePatterns": ["customer-management-client/pom\\.xml"],
       "matchStrings": [
         "<frontend\\.nodeVersion>(?<currentValue>v[\\d.]+)</frontend\\.nodeVersion>"
       ],
