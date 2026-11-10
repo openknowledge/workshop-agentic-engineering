@@ -1,14 +1,14 @@
 # === Build-Output (wird im Container neu erzeugt) ===
-basisprojekt-client/node_modules
-basisprojekt-client/dist
-basisprojekt-client/target
-basisprojekt-server/target
+customer-management-client/node_modules
+customer-management-client/dist
+customer-management-client/target
+customer-management-server/target
 
 # === Test-Output (im Container nicht benoetigt) ===
-basisprojekt-client/playwright-report
-basisprojekt-client/test-results
-basisprojekt-client/.nyc_output
-basisprojekt-client/coverage
+customer-management-client/playwright-report
+customer-management-client/test-results
+customer-management-client/.nyc_output
+customer-management-client/coverage
 
 # === IDE-/Editor-Metadaten ===
 .idea
@@ -23,7 +23,7 @@ basisprojekt-client/coverage
 # === Git ===
 .git
 .gitignore
-.gitlab-ci.yml
+.github/
 .gitattributes
 
 # === Maven Wrapper (im Build-Image nicht benoetigt) ===
@@ -37,18 +37,11 @@ basisprojekt-client/coverage
 
 # === Dokumentation / Setup ===
 README.md
-README.adoc
 LICENSE
-architecture-decision-records
-setup_steps
-docs
 
 # === Docker / CI Artefakte (Dockerfile selbst NICHT ausschliessen!) ===
 docker-compose*.yaml
 docker-compose*.yml
-
-# === Plan-Datei selbst (keinen Einfluss auf Build) ===
-docker-build-optimization-plan.md
 
 # === Sonstige Artefakte ===
 *.log

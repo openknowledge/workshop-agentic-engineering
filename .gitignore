@@ -1,8 +1,11 @@
 .*
-!.gitlab-ci.yml
+!.github
 !.gitignore
+!.gitattributes
 !.dockerignore
-!.claude/
-.claude/settings.local.json
+!.mvn
+!.agents
+!.junie
+!.devcontainer
 */target/
 */node/
