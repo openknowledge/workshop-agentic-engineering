@@ -61,6 +61,22 @@ npm install
 npm run dev
 ```
 
+### Pre-Commit Hook
+
+Before each commit, a hook integrated via [Husky](https://typicode.github.io/husky/) checks the formatting. It does not format anything itself, but aborts the commit if there are violations:
+
+- Frontend: `prettier --check` on the staged files (via lint-staged), as soon as files in `customer-management-client` are staged.
+- Backend: `spotless:check`, as soon as Java files in `customer-management-server` are staged.
+
+The hook is activated by `npm install` in the client (script `prepare`) or by the Maven build. To fix violations:
+
+```bash
+cd customer-management-client && npm run prettier
+./mvnw -pl customer-management-server spotless:apply
+```
+
+In exceptional cases, the hook can be skipped with `git commit --no-verify` (or `HUSKY=0`).
+
 ### Installing opencode
 
 As part of the Maven build (`./mvnw clean install`), the Frontend Maven Plugin also automatically installs [opencode](https://opencode.ai) locally in `customer-management-client/node`. A global installation is not required.

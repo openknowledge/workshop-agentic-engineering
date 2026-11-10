@@ -1,0 +1,18 @@
+ROOT="$(git rev-parse --show-toplevel)"
+PATH="$PATH:$ROOT/customer-management-client/node"
+
+if git diff --cached --name-only --diff-filter=ACMR | grep -q '^customer-management-client/'; then
+  echo "pre-commit: Prettier check (frontend)"
+  (cd "$ROOT/customer-management-client" && npx --no-install lint-staged) || {
+    echo "Frontend formatting violations found. Fix with: cd customer-management-client && npm run prettier"
+    exit 1
+  }
+fi
+
+if git diff --cached --name-only --diff-filter=ACMR | grep -q '^customer-management-server/.*\.java$'; then
+  echo "pre-commit: Spotless check (backend)"
+  (cd "$ROOT" && ./mvnw -q -pl customer-management-server spotless:check) || {
+    echo "Backend formatting violations found. Fix with: ./mvnw -pl customer-management-server spotless:apply"
+    exit 1
+  }
+fi
