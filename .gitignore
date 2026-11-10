@@ -9,5 +9,7 @@
 !.devcontainer
 !.prettierrc
 !.prettierignore
+!.husky
+!.opencode
 */target/
 */node/

@@ -10,7 +10,11 @@
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --write \"src/**/*.{ts,tsx,css,json}\" \"*.ts\"",
     "prettier:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\" \"*.ts\"",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "cd .. && husky customer-management-client/.husky"
+  },
+  "lint-staged": {
+    "{src/**/*.{ts,tsx,css,json},*.ts}": "prettier --check"
   },
   "dependencies": {
     "@tanstack/react-form": "^1.29.1",
@@ -31,6 +35,8 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^17.13.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "prettier": "^3.8.3",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.45.0",
