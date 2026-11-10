@@ -4,6 +4,12 @@ customer-management-client/dist
 customer-management-client/target
 customer-management-server/target
 
+# === Test output (not needed in the container) ===
+customer-management-client/playwright-report
+customer-management-client/test-results
+customer-management-client/.nyc_output
+customer-management-client/coverage
+
 # === IDE/editor metadata ===
 .idea
 .vscode

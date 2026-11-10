@@ -10,9 +10,13 @@ export default defineConfig([
     'dist',
     'node_modules',
     'build',
+    'coverage',
+    '.nyc_output',
     '*.config.js',
     '*.config.ts',
     'public',
+    'playwright-report',
+    'test-results',
   ]),
   {
     files: ['**/*.{ts,tsx}'],
@@ -28,6 +32,12 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+    },
+  },
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
 ]);
